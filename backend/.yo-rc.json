@@ -13,7 +13,7 @@
     "devDatabaseType": "mysql",
     "enableHibernateCache": true,
     "enableTranslation": true,
-    "entities": [],
+    "entities": ["Evento", "Venta", "AsientoVendido"],
     "feignClient": null,
     "jhipsterVersion": "8.11.0",
     "jwtSecretKey": "MWUxMDg5MGY1YWZiZDJmMjU3NTEzZDkyNjMzNjllM2FiNDhlYzg2ZGYyODMwZmZjMGYzOWI5NzI3MGE2Nzc2Y2FmNGQ1NjJkMzJiMjQ2ZjQ4MjZkYjRlZTFmZjRiOTY1OTVhNmFiMzQ2ZjdjYjMwYWI3MDkyNzkyOTA3NDU2YzA=",

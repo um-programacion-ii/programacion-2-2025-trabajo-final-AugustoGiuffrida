@@ -1,0 +1,50 @@
+<div class="d-flex justify-content-center">
+  <div class="col-8">
+    @if (asientoVendido(); as asientoVendidoRef) {
+      <div>
+        <h2 data-cy="asientoVendidoDetailsHeading"><span jhiTranslate="backendApp.asientoVendido.detail.title">Asiento Vendido</span></h2>
+
+        <hr />
+
+        <jhi-alert-error />
+
+        <jhi-alert />
+
+        <dl class="row-md jh-entity-details">
+          <dt><span jhiTranslate="global.field.id">ID</span></dt>
+          <dd>
+            <span>{{ asientoVendidoRef.id }}</span>
+          </dd>
+          <dt><span jhiTranslate="backendApp.asientoVendido.fila">Fila</span></dt>
+          <dd>
+            <span>{{ asientoVendidoRef.fila }}</span>
+          </dd>
+          <dt><span jhiTranslate="backendApp.asientoVendido.columna">Columna</span></dt>
+          <dd>
+            <span>{{ asientoVendidoRef.columna }}</span>
+          </dd>
+          <dt><span jhiTranslate="backendApp.asientoVendido.persona">Persona</span></dt>
+          <dd>
+            <span>{{ asientoVendidoRef.persona }}</span>
+          </dd>
+          <dt><span jhiTranslate="backendApp.asientoVendido.venta">Venta</span></dt>
+          <dd>
+            @if (asientoVendido()!.venta) {
+              <div>
+                <a [routerLink]="['/venta', asientoVendido()!.venta?.id, 'view']">{{ asientoVendidoRef.venta?.id }}</a>
+              </div>
+            }
+          </dd>
+        </dl>
+
+        <button type="submit" (click)="previousState()" class="btn btn-info" data-cy="entityDetailsBackButton">
+          <fa-icon icon="arrow-left"></fa-icon>&nbsp;<span jhiTranslate="entity.action.back">Volver</span>
+        </button>
+
+        <button type="button" [routerLink]="['/asiento-vendido', asientoVendidoRef.id, 'edit']" class="btn btn-primary">
+          <fa-icon icon="pencil-alt"></fa-icon>&nbsp;<span jhiTranslate="entity.action.edit">Editar</span>
+        </button>
+      </div>
+    }
+  </div>
+</div>

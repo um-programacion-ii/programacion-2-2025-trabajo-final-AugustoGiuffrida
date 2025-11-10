@@ -1,0 +1,10 @@
+{
+  "backendApp": {
+    "EstadoVenta": {
+      "null": "",
+      "PENDIENTE": "PENDIENTE",
+      "CONFIRMADA": "CONFIRMADA",
+      "RECHAZADA": "RECHAZADA"
+    }
+  }
+}

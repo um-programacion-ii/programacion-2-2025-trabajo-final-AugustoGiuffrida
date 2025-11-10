@@ -1,0 +1,11 @@
+id;venta_id_catedra;fecha_venta;precio_venta;resultado;descripcion;estado_venta;evento_id;user_id
+1;25406;2025-11-09T08:16:36;10542.2;true;ack fortunately old-fashioned;RECHAZADA;1;1
+2;7672;2025-11-09T04:10:29;26345.55;true;per;RECHAZADA;2;2
+3;20829;2025-11-09T07:37:55;10325.46;false;promise cap;PENDIENTE;3;2
+4;31087;2025-11-09T19:51:33;26638.56;false;tall tut aw;RECHAZADA;4;2
+5;18014;2025-11-10T01:21:03;16183.52;false;crossly;RECHAZADA;5;1
+6;16735;2025-11-09T16:32:52;29170.02;false;accidentally dusk verify;RECHAZADA;6;1
+7;14269;2025-11-09T05:53:16;22275.72;true;ah;CONFIRMADA;7;2
+8;23684;2025-11-09T09:40:04;17872.26;true;yuck handover um;RECHAZADA;8;2
+9;26392;2025-11-09T14:28:01;29075.47;false;tankful;RECHAZADA;9;2
+10;2998;2025-11-09T03:22:13;31989.34;true;er humor;RECHAZADA;10;2

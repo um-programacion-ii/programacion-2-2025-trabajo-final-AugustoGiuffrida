@@ -1,0 +1,70 @@
+{
+  "annotations": {
+    "changelogDate": "20251110015102"
+  },
+  "applications": "*",
+  "documentation": "Entidad para registrar las ventas realizadas.",
+  "fields": [
+    {
+      "fieldName": "ventaIdCatedra",
+      "fieldType": "Long"
+    },
+    {
+      "fieldName": "fechaVenta",
+      "fieldType": "Instant",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "precioVenta",
+      "fieldType": "BigDecimal",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "resultado",
+      "fieldType": "Boolean",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "descripcion",
+      "fieldType": "String"
+    },
+    {
+      "fieldName": "estadoVenta",
+      "fieldType": "EstadoVenta",
+      "fieldTypeDocumentation": "Enum para manejar el estado de la venta local",
+      "fieldValues": "PENDIENTE,CONFIRMADA,RECHAZADA"
+    }
+  ],
+  "name": "Venta",
+  "relationships": [
+    {
+      "documentation": "Una Venta puede tener muchos Asientos Vendidos.",
+      "otherEntityName": "asientoVendido",
+      "otherEntityRelationshipName": "venta",
+      "relationshipName": "asientos",
+      "relationshipSide": "left",
+      "relationshipType": "one-to-many"
+    },
+    {
+      "documentation": "Una Venta pertenece a un solo Evento.",
+      "otherEntityField": "titulo",
+      "otherEntityName": "evento",
+      "relationshipName": "evento",
+      "relationshipSide": "left",
+      "relationshipType": "many-to-one",
+      "relationshipValidateRules": "required"
+    },
+    {
+      "documentation": "Una Venta es realizada por un solo Usuario (User).\\nEl User ya existe en JHipster.",
+      "otherEntityField": "login",
+      "otherEntityName": "user",
+      "relationshipName": "user",
+      "relationshipSide": "left",
+      "relationshipType": "many-to-one",
+      "relationshipValidateRules": "required",
+      "relationshipWithBuiltInEntity": true
+    }
+  ],
+  "searchEngine": "no",
+  "service": "serviceImpl"
+}
