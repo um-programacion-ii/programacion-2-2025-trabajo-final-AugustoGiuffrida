@@ -1,0 +1,73 @@
+// --- Definición de Entidades para la Base de Datos Local ---
+
+/**
+ * Entidad para almacenar localmente la información de los eventos
+ * sincronizados desde el servicio de la Cátedra.
+ */
+entity Evento {
+    eventoIdCatedra Long required unique // ID del evento en el sistema de la Cátedra
+    titulo String required
+    resumen String
+    descripcion String
+    fecha Instant required
+    direccion String
+    imagen String
+    filaAsientos Integer required
+    columnAsientos Integer required
+    precioEntrada BigDecimal required
+}
+
+/**
+ * Entidad para registrar las ventas realizadas.
+ */
+entity Venta {
+    ventaIdCatedra Long // ID que devuelve la cátedra si la venta es exitosa
+    fechaVenta Instant required
+    precioVenta BigDecimal required
+    resultado Boolean required
+    descripcion String
+    estadoVenta EstadoVenta // Para manejar ventas pendientes de confirmación
+}
+
+/**
+ * Entidad auxiliar para guardar cada asiento de una Venta.
+ */
+entity AsientoVendido {
+    fila Integer required
+    columna Integer required
+    persona String required
+}
+
+/**
+ * Enum para manejar el estado de la venta local
+ */
+enum EstadoVenta {
+    PENDIENTE, // La venta se registró localmente pero falta confirmar con Cátedra
+    CONFIRMADA, // Cátedra confirmó la venta
+    RECHAZADA // Cátedra rechazó la venta
+}
+
+// --- Definición de Relaciones ---
+
+relationship ManyToOne {
+    /**
+     * Una Venta pertenece a un solo Evento.
+     */
+    Venta{evento(titulo) required} to Evento,
+
+    /**
+     * Una Venta es realizada por un solo Usuario (User).
+     * El User ya existe en JHipster.
+     */
+    Venta{user(login) required} to User with builtInEntity
+}
+
+relationship OneToMany {
+    /**
+     * Una Venta puede tener muchos Asientos Vendidos.
+     */
+    Venta{asientos} to AsientoVendido{venta}
+}
+
+// --- Opciones Adicionales ---
+service all with serviceImpl

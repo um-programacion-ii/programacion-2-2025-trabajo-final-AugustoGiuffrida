@@ -1,0 +1,93 @@
+# -------------------------------------------------
+# System / IDE files
+# -------------------------------------------------
+.DS_Store
+Thumbs.db
+*.log
+*.swp
+*.tmp
+
+# IntelliJ / IDEA
+/.idea/
+/*.iml
+
+# VS Code
+.vscode/
+
+# -------------------------------------------------
+# Java build
+# -------------------------------------------------
+/target/
+/build/
+/out/
+*.class
+*.jar
+*.war
+*.ear
+
+# Maven wrapper
+/mvnw
+/mvnw.cmd
+/.mvn/wrapper/maven-wrapper.jar
+/.mvn/wrapper/maven-wrapper.properties
+
+# -------------------------------------------------
+# Node / frontend
+# -------------------------------------------------
+/node_modules/
+/npm-debug.log
+/yarn-debug.log
+/yarn-error.log
+/dist/
+/build/
+/out-tsc/
+
+# Angular / frontend files
+/*.tsbuildinfo
+/.angular/cache/
+
+# -------------------------------------------------
+# JHipster / Spring Boot specifics
+# -------------------------------------------------
+/.jhipster/
+/.jhipster/*.json
+/.yo-rc.json     # si lo generaste pero no querés que se modifique? (ajustá según decisión)
+/target/
+/logs/
+/tmp/
+
+/src/main/webapp/webpack/
+*.map
+
+# Liquibase / changelogs generados automáticos (si considerás que no querés subirlos todos)
+/src/main/resources/config/liquibase/changelog/*.xml
+
+# -------------------------------------------------
+# Docker
+# -------------------------------------------------
+/docker-compose.override.yml
+/docker-compose.local.yml
+/docker/
+*.env
+
+# -------------------------------------------------
+# OS-specific
+# -------------------------------------------------
+/*.bak
+*~
+
+# -------------------------------------------------
+# Coverage / test output
+# -------------------------------------------------
+/coverage/
+*.lcov
+/test-results/
+/surefire-report.html
+/target/site/
+
+# -------------------------------------------------
+# Others
+# -------------------------------------------------
+/.idea/
+*.iml
+*.log

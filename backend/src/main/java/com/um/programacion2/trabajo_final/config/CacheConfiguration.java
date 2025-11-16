@@ -83,6 +83,10 @@ public class CacheConfiguration {
             createCache(cm, com.um.programacion2.trabajo_final.domain.User.class.getName(), jcacheConfiguration);
             createCache(cm, com.um.programacion2.trabajo_final.domain.Authority.class.getName(), jcacheConfiguration);
             createCache(cm, com.um.programacion2.trabajo_final.domain.User.class.getName() + ".authorities", jcacheConfiguration);
+            createCache(cm, com.um.programacion2.trabajo_final.domain.Evento.class.getName(), jcacheConfiguration);
+            createCache(cm, com.um.programacion2.trabajo_final.domain.Venta.class.getName(), jcacheConfiguration);
+            createCache(cm, com.um.programacion2.trabajo_final.domain.Venta.class.getName() + ".asientos", jcacheConfiguration);
+            createCache(cm, com.um.programacion2.trabajo_final.domain.AsientoVendido.class.getName(), jcacheConfiguration);
             // jhipster-needle-redis-add-entry
         };
     }
