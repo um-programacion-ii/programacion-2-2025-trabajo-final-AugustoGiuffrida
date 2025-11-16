@@ -11,6 +11,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.um.programacion2.trabajo_final.IntegrationTest;
 import com.um.programacion2.trabajo_final.domain.AsientoVendido;
 import com.um.programacion2.trabajo_final.repository.AsientoVendidoRepository;
+import com.um.programacion2.trabajo_final.service.dto.AsientoVendidoDTO;
+import com.um.programacion2.trabajo_final.service.mapper.AsientoVendidoMapper;
 import jakarta.persistence.EntityManager;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicLong;
@@ -52,6 +54,9 @@ class AsientoVendidoResourceIT {
 
     @Autowired
     private AsientoVendidoRepository asientoVendidoRepository;
+
+    @Autowired
+    private AsientoVendidoMapper asientoVendidoMapper;
 
     @Autowired
     private EntityManager em;
@@ -101,18 +106,20 @@ class AsientoVendidoResourceIT {
     void createAsientoVendido() throws Exception {
         long databaseSizeBeforeCreate = getRepositoryCount();
         // Create the AsientoVendido
-        var returnedAsientoVendido = om.readValue(
+        AsientoVendidoDTO asientoVendidoDTO = asientoVendidoMapper.toDto(asientoVendido);
+        var returnedAsientoVendidoDTO = om.readValue(
             restAsientoVendidoMockMvc
-                .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(asientoVendido)))
+                .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(asientoVendidoDTO)))
                 .andExpect(status().isCreated())
                 .andReturn()
                 .getResponse()
                 .getContentAsString(),
-            AsientoVendido.class
+            AsientoVendidoDTO.class
         );
 
         // Validate the AsientoVendido in the database
         assertIncrementedRepositoryCount(databaseSizeBeforeCreate);
+        var returnedAsientoVendido = asientoVendidoMapper.toEntity(returnedAsientoVendidoDTO);
         assertAsientoVendidoUpdatableFieldsEquals(returnedAsientoVendido, getPersistedAsientoVendido(returnedAsientoVendido));
 
         insertedAsientoVendido = returnedAsientoVendido;
@@ -123,12 +130,13 @@ class AsientoVendidoResourceIT {
     void createAsientoVendidoWithExistingId() throws Exception {
         // Create the AsientoVendido with an existing ID
         asientoVendido.setId(1L);
+        AsientoVendidoDTO asientoVendidoDTO = asientoVendidoMapper.toDto(asientoVendido);
 
         long databaseSizeBeforeCreate = getRepositoryCount();
 
         // An entity with an existing ID cannot be created, so this API call must fail
         restAsientoVendidoMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(asientoVendido)))
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(asientoVendidoDTO)))
             .andExpect(status().isBadRequest());
 
         // Validate the AsientoVendido in the database
@@ -143,9 +151,10 @@ class AsientoVendidoResourceIT {
         asientoVendido.setFila(null);
 
         // Create the AsientoVendido, which fails.
+        AsientoVendidoDTO asientoVendidoDTO = asientoVendidoMapper.toDto(asientoVendido);
 
         restAsientoVendidoMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(asientoVendido)))
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(asientoVendidoDTO)))
             .andExpect(status().isBadRequest());
 
         assertSameRepositoryCount(databaseSizeBeforeTest);
@@ -159,9 +168,10 @@ class AsientoVendidoResourceIT {
         asientoVendido.setColumna(null);
 
         // Create the AsientoVendido, which fails.
+        AsientoVendidoDTO asientoVendidoDTO = asientoVendidoMapper.toDto(asientoVendido);
 
         restAsientoVendidoMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(asientoVendido)))
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(asientoVendidoDTO)))
             .andExpect(status().isBadRequest());
 
         assertSameRepositoryCount(databaseSizeBeforeTest);
@@ -175,9 +185,10 @@ class AsientoVendidoResourceIT {
         asientoVendido.setPersona(null);
 
         // Create the AsientoVendido, which fails.
+        AsientoVendidoDTO asientoVendidoDTO = asientoVendidoMapper.toDto(asientoVendido);
 
         restAsientoVendidoMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(asientoVendido)))
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(asientoVendidoDTO)))
             .andExpect(status().isBadRequest());
 
         assertSameRepositoryCount(databaseSizeBeforeTest);
@@ -237,12 +248,13 @@ class AsientoVendidoResourceIT {
         // Disconnect from session so that the updates on updatedAsientoVendido are not directly saved in db
         em.detach(updatedAsientoVendido);
         updatedAsientoVendido.fila(UPDATED_FILA).columna(UPDATED_COLUMNA).persona(UPDATED_PERSONA);
+        AsientoVendidoDTO asientoVendidoDTO = asientoVendidoMapper.toDto(updatedAsientoVendido);
 
         restAsientoVendidoMockMvc
             .perform(
-                put(ENTITY_API_URL_ID, updatedAsientoVendido.getId())
+                put(ENTITY_API_URL_ID, asientoVendidoDTO.getId())
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(om.writeValueAsBytes(updatedAsientoVendido))
+                    .content(om.writeValueAsBytes(asientoVendidoDTO))
             )
             .andExpect(status().isOk());
 
@@ -257,12 +269,15 @@ class AsientoVendidoResourceIT {
         long databaseSizeBeforeUpdate = getRepositoryCount();
         asientoVendido.setId(longCount.incrementAndGet());
 
+        // Create the AsientoVendido
+        AsientoVendidoDTO asientoVendidoDTO = asientoVendidoMapper.toDto(asientoVendido);
+
         // If the entity doesn't have an ID, it will throw BadRequestAlertException
         restAsientoVendidoMockMvc
             .perform(
-                put(ENTITY_API_URL_ID, asientoVendido.getId())
+                put(ENTITY_API_URL_ID, asientoVendidoDTO.getId())
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(om.writeValueAsBytes(asientoVendido))
+                    .content(om.writeValueAsBytes(asientoVendidoDTO))
             )
             .andExpect(status().isBadRequest());
 
@@ -276,12 +291,15 @@ class AsientoVendidoResourceIT {
         long databaseSizeBeforeUpdate = getRepositoryCount();
         asientoVendido.setId(longCount.incrementAndGet());
 
+        // Create the AsientoVendido
+        AsientoVendidoDTO asientoVendidoDTO = asientoVendidoMapper.toDto(asientoVendido);
+
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restAsientoVendidoMockMvc
             .perform(
                 put(ENTITY_API_URL_ID, longCount.incrementAndGet())
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(om.writeValueAsBytes(asientoVendido))
+                    .content(om.writeValueAsBytes(asientoVendidoDTO))
             )
             .andExpect(status().isBadRequest());
 
@@ -295,9 +313,12 @@ class AsientoVendidoResourceIT {
         long databaseSizeBeforeUpdate = getRepositoryCount();
         asientoVendido.setId(longCount.incrementAndGet());
 
+        // Create the AsientoVendido
+        AsientoVendidoDTO asientoVendidoDTO = asientoVendidoMapper.toDto(asientoVendido);
+
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restAsientoVendidoMockMvc
-            .perform(put(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(asientoVendido)))
+            .perform(put(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(asientoVendidoDTO)))
             .andExpect(status().isMethodNotAllowed());
 
         // Validate the AsientoVendido in the database
@@ -367,12 +388,15 @@ class AsientoVendidoResourceIT {
         long databaseSizeBeforeUpdate = getRepositoryCount();
         asientoVendido.setId(longCount.incrementAndGet());
 
+        // Create the AsientoVendido
+        AsientoVendidoDTO asientoVendidoDTO = asientoVendidoMapper.toDto(asientoVendido);
+
         // If the entity doesn't have an ID, it will throw BadRequestAlertException
         restAsientoVendidoMockMvc
             .perform(
-                patch(ENTITY_API_URL_ID, asientoVendido.getId())
+                patch(ENTITY_API_URL_ID, asientoVendidoDTO.getId())
                     .contentType("application/merge-patch+json")
-                    .content(om.writeValueAsBytes(asientoVendido))
+                    .content(om.writeValueAsBytes(asientoVendidoDTO))
             )
             .andExpect(status().isBadRequest());
 
@@ -386,12 +410,15 @@ class AsientoVendidoResourceIT {
         long databaseSizeBeforeUpdate = getRepositoryCount();
         asientoVendido.setId(longCount.incrementAndGet());
 
+        // Create the AsientoVendido
+        AsientoVendidoDTO asientoVendidoDTO = asientoVendidoMapper.toDto(asientoVendido);
+
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restAsientoVendidoMockMvc
             .perform(
                 patch(ENTITY_API_URL_ID, longCount.incrementAndGet())
                     .contentType("application/merge-patch+json")
-                    .content(om.writeValueAsBytes(asientoVendido))
+                    .content(om.writeValueAsBytes(asientoVendidoDTO))
             )
             .andExpect(status().isBadRequest());
 
@@ -405,9 +432,12 @@ class AsientoVendidoResourceIT {
         long databaseSizeBeforeUpdate = getRepositoryCount();
         asientoVendido.setId(longCount.incrementAndGet());
 
+        // Create the AsientoVendido
+        AsientoVendidoDTO asientoVendidoDTO = asientoVendidoMapper.toDto(asientoVendido);
+
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restAsientoVendidoMockMvc
-            .perform(patch(ENTITY_API_URL).contentType("application/merge-patch+json").content(om.writeValueAsBytes(asientoVendido)))
+            .perform(patch(ENTITY_API_URL).contentType("application/merge-patch+json").content(om.writeValueAsBytes(asientoVendidoDTO)))
             .andExpect(status().isMethodNotAllowed());
 
         // Validate the AsientoVendido in the database

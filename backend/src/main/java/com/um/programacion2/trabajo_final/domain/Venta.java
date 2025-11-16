@@ -2,7 +2,6 @@ package com.um.programacion2.trabajo_final.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.um.programacion2.trabajo_final.domain.enumeration.EstadoVenta;
-import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
@@ -10,16 +9,12 @@ import java.math.BigDecimal;
 import java.time.Instant;
 import java.util.HashSet;
 import java.util.Set;
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 /**
  * Entidad para registrar las ventas realizadas.
  */
-@Schema(description = "Entidad para registrar las ventas realizadas.")
 @Entity
 @Table(name = "venta")
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @SuppressWarnings("common-java:DuplicatedBlocks")
 public class Venta implements Serializable {
 
@@ -55,16 +50,13 @@ public class Venta implements Serializable {
     /**
      * Una Venta puede tener muchos Asientos Vendidos.
      */
-    @Schema(description = "Una Venta puede tener muchos Asientos Vendidos.")
     @OneToMany(fetch = FetchType.LAZY, mappedBy = "venta")
-    @Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
     @JsonIgnoreProperties(value = { "venta" }, allowSetters = true)
     private Set<AsientoVendido> asientos = new HashSet<>();
 
     /**
      * Una Venta pertenece a un solo Evento.
      */
-    @Schema(description = "Una Venta pertenece a un solo Evento.")
     @ManyToOne(optional = false)
     @NotNull
     private Evento evento;
@@ -73,11 +65,9 @@ public class Venta implements Serializable {
      * Una Venta es realizada por un solo Usuario (User).
      * El User ya existe en JHipster.
      */
-    @Schema(description = "Una Venta es realizada por un solo Usuario (User).\nEl User ya existe en JHipster.")
     @ManyToOne(optional = false)
     @NotNull
     private User user;
-
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
     public Long getId() {

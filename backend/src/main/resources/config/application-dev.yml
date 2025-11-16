@@ -112,4 +112,7 @@ jhipster:
 # https://www.jhipster.tech/common-application-properties/
 # ===================================================================
 
-# application:
+application:
+  catedra:
+    token: "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhLmdpdWZmcmlkYSIsImV4cCI6MTc2NTg2MzA3OSwiYXV0aCI6IlJPTEVfVVNFUiIsImlhdCI6MTc2MzI3MTA3OX0.RVZCcmZJ9SPDPot8TluqyuBvxU1hlLdMl0appRUX7grmL5HFlucyGgM-_bb31cDZOZ_JxmKPp9RXZ4axCC_JzQ"
+    eventos-url: "http://192.168.194.250:8080/api/endpoints/v1/eventos"

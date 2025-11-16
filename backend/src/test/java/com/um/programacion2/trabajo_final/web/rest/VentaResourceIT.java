@@ -18,6 +18,8 @@ import com.um.programacion2.trabajo_final.domain.enumeration.EstadoVenta;
 import com.um.programacion2.trabajo_final.repository.UserRepository;
 import com.um.programacion2.trabajo_final.repository.VentaRepository;
 import com.um.programacion2.trabajo_final.service.VentaService;
+import com.um.programacion2.trabajo_final.service.dto.VentaDTO;
+import com.um.programacion2.trabajo_final.service.mapper.VentaMapper;
 import jakarta.persistence.EntityManager;
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -84,6 +86,9 @@ class VentaResourceIT {
 
     @Mock
     private VentaRepository ventaRepositoryMock;
+
+    @Autowired
+    private VentaMapper ventaMapper;
 
     @Mock
     private VentaService ventaServiceMock;
@@ -180,18 +185,20 @@ class VentaResourceIT {
     void createVenta() throws Exception {
         long databaseSizeBeforeCreate = getRepositoryCount();
         // Create the Venta
-        var returnedVenta = om.readValue(
+        VentaDTO ventaDTO = ventaMapper.toDto(venta);
+        var returnedVentaDTO = om.readValue(
             restVentaMockMvc
-                .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(venta)))
+                .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(ventaDTO)))
                 .andExpect(status().isCreated())
                 .andReturn()
                 .getResponse()
                 .getContentAsString(),
-            Venta.class
+            VentaDTO.class
         );
 
         // Validate the Venta in the database
         assertIncrementedRepositoryCount(databaseSizeBeforeCreate);
+        var returnedVenta = ventaMapper.toEntity(returnedVentaDTO);
         assertVentaUpdatableFieldsEquals(returnedVenta, getPersistedVenta(returnedVenta));
 
         insertedVenta = returnedVenta;
@@ -202,12 +209,13 @@ class VentaResourceIT {
     void createVentaWithExistingId() throws Exception {
         // Create the Venta with an existing ID
         venta.setId(1L);
+        VentaDTO ventaDTO = ventaMapper.toDto(venta);
 
         long databaseSizeBeforeCreate = getRepositoryCount();
 
         // An entity with an existing ID cannot be created, so this API call must fail
         restVentaMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(venta)))
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(ventaDTO)))
             .andExpect(status().isBadRequest());
 
         // Validate the Venta in the database
@@ -222,9 +230,10 @@ class VentaResourceIT {
         venta.setFechaVenta(null);
 
         // Create the Venta, which fails.
+        VentaDTO ventaDTO = ventaMapper.toDto(venta);
 
         restVentaMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(venta)))
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(ventaDTO)))
             .andExpect(status().isBadRequest());
 
         assertSameRepositoryCount(databaseSizeBeforeTest);
@@ -238,9 +247,10 @@ class VentaResourceIT {
         venta.setPrecioVenta(null);
 
         // Create the Venta, which fails.
+        VentaDTO ventaDTO = ventaMapper.toDto(venta);
 
         restVentaMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(venta)))
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(ventaDTO)))
             .andExpect(status().isBadRequest());
 
         assertSameRepositoryCount(databaseSizeBeforeTest);
@@ -254,9 +264,10 @@ class VentaResourceIT {
         venta.setResultado(null);
 
         // Create the Venta, which fails.
+        VentaDTO ventaDTO = ventaMapper.toDto(venta);
 
         restVentaMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(venta)))
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(ventaDTO)))
             .andExpect(status().isBadRequest());
 
         assertSameRepositoryCount(databaseSizeBeforeTest);
@@ -345,12 +356,11 @@ class VentaResourceIT {
             .resultado(UPDATED_RESULTADO)
             .descripcion(UPDATED_DESCRIPCION)
             .estadoVenta(UPDATED_ESTADO_VENTA);
+        VentaDTO ventaDTO = ventaMapper.toDto(updatedVenta);
 
         restVentaMockMvc
             .perform(
-                put(ENTITY_API_URL_ID, updatedVenta.getId())
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(om.writeValueAsBytes(updatedVenta))
+                put(ENTITY_API_URL_ID, ventaDTO.getId()).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(ventaDTO))
             )
             .andExpect(status().isOk());
 
@@ -365,9 +375,14 @@ class VentaResourceIT {
         long databaseSizeBeforeUpdate = getRepositoryCount();
         venta.setId(longCount.incrementAndGet());
 
+        // Create the Venta
+        VentaDTO ventaDTO = ventaMapper.toDto(venta);
+
         // If the entity doesn't have an ID, it will throw BadRequestAlertException
         restVentaMockMvc
-            .perform(put(ENTITY_API_URL_ID, venta.getId()).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(venta)))
+            .perform(
+                put(ENTITY_API_URL_ID, ventaDTO.getId()).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(ventaDTO))
+            )
             .andExpect(status().isBadRequest());
 
         // Validate the Venta in the database
@@ -380,12 +395,15 @@ class VentaResourceIT {
         long databaseSizeBeforeUpdate = getRepositoryCount();
         venta.setId(longCount.incrementAndGet());
 
+        // Create the Venta
+        VentaDTO ventaDTO = ventaMapper.toDto(venta);
+
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restVentaMockMvc
             .perform(
                 put(ENTITY_API_URL_ID, longCount.incrementAndGet())
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(om.writeValueAsBytes(venta))
+                    .content(om.writeValueAsBytes(ventaDTO))
             )
             .andExpect(status().isBadRequest());
 
@@ -399,9 +417,12 @@ class VentaResourceIT {
         long databaseSizeBeforeUpdate = getRepositoryCount();
         venta.setId(longCount.incrementAndGet());
 
+        // Create the Venta
+        VentaDTO ventaDTO = ventaMapper.toDto(venta);
+
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restVentaMockMvc
-            .perform(put(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(venta)))
+            .perform(put(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(ventaDTO)))
             .andExpect(status().isMethodNotAllowed());
 
         // Validate the Venta in the database
@@ -476,10 +497,15 @@ class VentaResourceIT {
         long databaseSizeBeforeUpdate = getRepositoryCount();
         venta.setId(longCount.incrementAndGet());
 
+        // Create the Venta
+        VentaDTO ventaDTO = ventaMapper.toDto(venta);
+
         // If the entity doesn't have an ID, it will throw BadRequestAlertException
         restVentaMockMvc
             .perform(
-                patch(ENTITY_API_URL_ID, venta.getId()).contentType("application/merge-patch+json").content(om.writeValueAsBytes(venta))
+                patch(ENTITY_API_URL_ID, ventaDTO.getId())
+                    .contentType("application/merge-patch+json")
+                    .content(om.writeValueAsBytes(ventaDTO))
             )
             .andExpect(status().isBadRequest());
 
@@ -493,12 +519,15 @@ class VentaResourceIT {
         long databaseSizeBeforeUpdate = getRepositoryCount();
         venta.setId(longCount.incrementAndGet());
 
+        // Create the Venta
+        VentaDTO ventaDTO = ventaMapper.toDto(venta);
+
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restVentaMockMvc
             .perform(
                 patch(ENTITY_API_URL_ID, longCount.incrementAndGet())
                     .contentType("application/merge-patch+json")
-                    .content(om.writeValueAsBytes(venta))
+                    .content(om.writeValueAsBytes(ventaDTO))
             )
             .andExpect(status().isBadRequest());
 
@@ -512,9 +541,12 @@ class VentaResourceIT {
         long databaseSizeBeforeUpdate = getRepositoryCount();
         venta.setId(longCount.incrementAndGet());
 
+        // Create the Venta
+        VentaDTO ventaDTO = ventaMapper.toDto(venta);
+
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restVentaMockMvc
-            .perform(patch(ENTITY_API_URL).contentType("application/merge-patch+json").content(om.writeValueAsBytes(venta)))
+            .perform(patch(ENTITY_API_URL).contentType("application/merge-patch+json").content(om.writeValueAsBytes(ventaDTO)))
             .andExpect(status().isMethodNotAllowed());
 
         // Validate the Venta in the database

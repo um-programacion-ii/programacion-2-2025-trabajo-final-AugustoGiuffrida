@@ -11,7 +11,7 @@ export interface IVenta {
   resultado?: boolean | null;
   descripcion?: string | null;
   estadoVenta?: keyof typeof EstadoVenta | null;
-  evento?: IEvento | null;
+  evento?: Pick<IEvento, 'id' | 'titulo'> | null;
   user?: Pick<IUser, 'id' | 'login'> | null;
 }
 

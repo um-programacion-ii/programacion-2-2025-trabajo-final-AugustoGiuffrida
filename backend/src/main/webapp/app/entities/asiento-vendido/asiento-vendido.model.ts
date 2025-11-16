@@ -5,7 +5,7 @@ export interface IAsientoVendido {
   fila?: number | null;
   columna?: number | null;
   persona?: string | null;
-  venta?: IVenta | null;
+  venta?: Pick<IVenta, 'id'> | null;
 }
 
 export type NewAsientoVendido = Omit<IAsientoVendido, 'id'> & { id: null };

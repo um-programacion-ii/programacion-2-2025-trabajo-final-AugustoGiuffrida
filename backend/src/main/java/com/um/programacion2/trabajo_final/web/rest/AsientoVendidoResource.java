@@ -1,8 +1,8 @@
 package com.um.programacion2.trabajo_final.web.rest;
 
-import com.um.programacion2.trabajo_final.domain.AsientoVendido;
 import com.um.programacion2.trabajo_final.repository.AsientoVendidoRepository;
 import com.um.programacion2.trabajo_final.service.AsientoVendidoService;
+import com.um.programacion2.trabajo_final.service.dto.AsientoVendidoDTO;
 import com.um.programacion2.trabajo_final.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -45,43 +45,43 @@ public class AsientoVendidoResource {
     /**
      * {@code POST  /asiento-vendidos} : Create a new asientoVendido.
      *
-     * @param asientoVendido the asientoVendido to create.
-     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new asientoVendido, or with status {@code 400 (Bad Request)} if the asientoVendido has already an ID.
+     * @param asientoVendidoDTO the asientoVendidoDTO to create.
+     * @return the {@link ResponseEntity} with status {@code 201 (Created)} and with body the new asientoVendidoDTO, or with status {@code 400 (Bad Request)} if the asientoVendido has already an ID.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PostMapping("")
-    public ResponseEntity<AsientoVendido> createAsientoVendido(@Valid @RequestBody AsientoVendido asientoVendido)
+    public ResponseEntity<AsientoVendidoDTO> createAsientoVendido(@Valid @RequestBody AsientoVendidoDTO asientoVendidoDTO)
         throws URISyntaxException {
-        LOG.debug("REST request to save AsientoVendido : {}", asientoVendido);
-        if (asientoVendido.getId() != null) {
+        LOG.debug("REST request to save AsientoVendido : {}", asientoVendidoDTO);
+        if (asientoVendidoDTO.getId() != null) {
             throw new BadRequestAlertException("A new asientoVendido cannot already have an ID", ENTITY_NAME, "idexists");
         }
-        asientoVendido = asientoVendidoService.save(asientoVendido);
-        return ResponseEntity.created(new URI("/api/asiento-vendidos/" + asientoVendido.getId()))
-            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, asientoVendido.getId().toString()))
-            .body(asientoVendido);
+        asientoVendidoDTO = asientoVendidoService.save(asientoVendidoDTO);
+        return ResponseEntity.created(new URI("/api/asiento-vendidos/" + asientoVendidoDTO.getId()))
+            .headers(HeaderUtil.createEntityCreationAlert(applicationName, true, ENTITY_NAME, asientoVendidoDTO.getId().toString()))
+            .body(asientoVendidoDTO);
     }
 
     /**
      * {@code PUT  /asiento-vendidos/:id} : Updates an existing asientoVendido.
      *
-     * @param id the id of the asientoVendido to save.
-     * @param asientoVendido the asientoVendido to update.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated asientoVendido,
-     * or with status {@code 400 (Bad Request)} if the asientoVendido is not valid,
-     * or with status {@code 500 (Internal Server Error)} if the asientoVendido couldn't be updated.
+     * @param id the id of the asientoVendidoDTO to save.
+     * @param asientoVendidoDTO the asientoVendidoDTO to update.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated asientoVendidoDTO,
+     * or with status {@code 400 (Bad Request)} if the asientoVendidoDTO is not valid,
+     * or with status {@code 500 (Internal Server Error)} if the asientoVendidoDTO couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PutMapping("/{id}")
-    public ResponseEntity<AsientoVendido> updateAsientoVendido(
+    public ResponseEntity<AsientoVendidoDTO> updateAsientoVendido(
         @PathVariable(value = "id", required = false) final Long id,
-        @Valid @RequestBody AsientoVendido asientoVendido
+        @Valid @RequestBody AsientoVendidoDTO asientoVendidoDTO
     ) throws URISyntaxException {
-        LOG.debug("REST request to update AsientoVendido : {}, {}", id, asientoVendido);
-        if (asientoVendido.getId() == null) {
+        LOG.debug("REST request to update AsientoVendido : {}, {}", id, asientoVendidoDTO);
+        if (asientoVendidoDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
-        if (!Objects.equals(id, asientoVendido.getId())) {
+        if (!Objects.equals(id, asientoVendidoDTO.getId())) {
             throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
         }
 
@@ -89,33 +89,33 @@ public class AsientoVendidoResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
-        asientoVendido = asientoVendidoService.update(asientoVendido);
+        asientoVendidoDTO = asientoVendidoService.update(asientoVendidoDTO);
         return ResponseEntity.ok()
-            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, asientoVendido.getId().toString()))
-            .body(asientoVendido);
+            .headers(HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, asientoVendidoDTO.getId().toString()))
+            .body(asientoVendidoDTO);
     }
 
     /**
      * {@code PATCH  /asiento-vendidos/:id} : Partial updates given fields of an existing asientoVendido, field will ignore if it is null
      *
-     * @param id the id of the asientoVendido to save.
-     * @param asientoVendido the asientoVendido to update.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated asientoVendido,
-     * or with status {@code 400 (Bad Request)} if the asientoVendido is not valid,
-     * or with status {@code 404 (Not Found)} if the asientoVendido is not found,
-     * or with status {@code 500 (Internal Server Error)} if the asientoVendido couldn't be updated.
+     * @param id the id of the asientoVendidoDTO to save.
+     * @param asientoVendidoDTO the asientoVendidoDTO to update.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the updated asientoVendidoDTO,
+     * or with status {@code 400 (Bad Request)} if the asientoVendidoDTO is not valid,
+     * or with status {@code 404 (Not Found)} if the asientoVendidoDTO is not found,
+     * or with status {@code 500 (Internal Server Error)} if the asientoVendidoDTO couldn't be updated.
      * @throws URISyntaxException if the Location URI syntax is incorrect.
      */
     @PatchMapping(value = "/{id}", consumes = { "application/json", "application/merge-patch+json" })
-    public ResponseEntity<AsientoVendido> partialUpdateAsientoVendido(
+    public ResponseEntity<AsientoVendidoDTO> partialUpdateAsientoVendido(
         @PathVariable(value = "id", required = false) final Long id,
-        @NotNull @RequestBody AsientoVendido asientoVendido
+        @NotNull @RequestBody AsientoVendidoDTO asientoVendidoDTO
     ) throws URISyntaxException {
-        LOG.debug("REST request to partial update AsientoVendido partially : {}, {}", id, asientoVendido);
-        if (asientoVendido.getId() == null) {
+        LOG.debug("REST request to partial update AsientoVendido partially : {}, {}", id, asientoVendidoDTO);
+        if (asientoVendidoDTO.getId() == null) {
             throw new BadRequestAlertException("Invalid id", ENTITY_NAME, "idnull");
         }
-        if (!Objects.equals(id, asientoVendido.getId())) {
+        if (!Objects.equals(id, asientoVendidoDTO.getId())) {
             throw new BadRequestAlertException("Invalid ID", ENTITY_NAME, "idinvalid");
         }
 
@@ -123,11 +123,11 @@ public class AsientoVendidoResource {
             throw new BadRequestAlertException("Entity not found", ENTITY_NAME, "idnotfound");
         }
 
-        Optional<AsientoVendido> result = asientoVendidoService.partialUpdate(asientoVendido);
+        Optional<AsientoVendidoDTO> result = asientoVendidoService.partialUpdate(asientoVendidoDTO);
 
         return ResponseUtil.wrapOrNotFound(
             result,
-            HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, asientoVendido.getId().toString())
+            HeaderUtil.createEntityUpdateAlert(applicationName, true, ENTITY_NAME, asientoVendidoDTO.getId().toString())
         );
     }
 
@@ -137,7 +137,7 @@ public class AsientoVendidoResource {
      * @return the {@link ResponseEntity} with status {@code 200 (OK)} and the list of asientoVendidos in body.
      */
     @GetMapping("")
-    public List<AsientoVendido> getAllAsientoVendidos() {
+    public List<AsientoVendidoDTO> getAllAsientoVendidos() {
         LOG.debug("REST request to get all AsientoVendidos");
         return asientoVendidoService.findAll();
     }
@@ -145,20 +145,20 @@ public class AsientoVendidoResource {
     /**
      * {@code GET  /asiento-vendidos/:id} : get the "id" asientoVendido.
      *
-     * @param id the id of the asientoVendido to retrieve.
-     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the asientoVendido, or with status {@code 404 (Not Found)}.
+     * @param id the id of the asientoVendidoDTO to retrieve.
+     * @return the {@link ResponseEntity} with status {@code 200 (OK)} and with body the asientoVendidoDTO, or with status {@code 404 (Not Found)}.
      */
     @GetMapping("/{id}")
-    public ResponseEntity<AsientoVendido> getAsientoVendido(@PathVariable("id") Long id) {
+    public ResponseEntity<AsientoVendidoDTO> getAsientoVendido(@PathVariable("id") Long id) {
         LOG.debug("REST request to get AsientoVendido : {}", id);
-        Optional<AsientoVendido> asientoVendido = asientoVendidoService.findOne(id);
-        return ResponseUtil.wrapOrNotFound(asientoVendido);
+        Optional<AsientoVendidoDTO> asientoVendidoDTO = asientoVendidoService.findOne(id);
+        return ResponseUtil.wrapOrNotFound(asientoVendidoDTO);
     }
 
     /**
      * {@code DELETE  /asiento-vendidos/:id} : delete the "id" asientoVendido.
      *
-     * @param id the id of the asientoVendido to delete.
+     * @param id the id of the asientoVendidoDTO to delete.
      * @return the {@link ResponseEntity} with status {@code 204 (NO_CONTENT)}.
      */
     @DeleteMapping("/{id}")

@@ -1,20 +1,15 @@
 package com.um.programacion2.trabajo_final.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
 
 /**
  * Entidad auxiliar para guardar cada asiento de una Venta.
  */
-@Schema(description = "Entidad auxiliar para guardar cada asiento de una Venta.")
 @Entity
 @Table(name = "asiento_vendido")
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @SuppressWarnings("common-java:DuplicatedBlocks")
 public class AsientoVendido implements Serializable {
 
