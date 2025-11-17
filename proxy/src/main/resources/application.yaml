@@ -1,0 +1,23 @@
+# Puerto en el que correrá el proxy
+server:
+  port: 8081
+
+spring:
+  application:
+    name: proxy
+  # Configuración para el REDIS de la CÁTEDRA
+  data:
+    redis:
+      host: 192.168.194.250
+      port: 6379
+      # Si el Redis de la cátedra requiere contraseña, se añade aquí:
+      # password: "la_password_si_la_hay"
+
+  # Configuración para el KAFKA de la CÁTEDRA
+  kafka:
+    bootstrap-servers: 192.168.194.250:9092
+    consumer:
+      group-id: "AugustoGiuffrida"
+      auto-offset-reset: earliest
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
