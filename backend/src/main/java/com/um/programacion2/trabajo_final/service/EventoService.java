@@ -1,6 +1,7 @@
 package com.um.programacion2.trabajo_final.service;
 
 import com.um.programacion2.trabajo_final.domain.Evento;
+import com.um.programacion2.trabajo_final.service.dto.EventoDTO;
 import java.util.List;
 import java.util.Optional;
 
@@ -11,33 +12,33 @@ public interface EventoService {
     /**
      * Save a evento.
      *
-     * @param evento the entity to save.
+     * @param eventoDTO the entity to save.
      * @return the persisted entity.
      */
-    Evento save(Evento evento);
+    EventoDTO save(EventoDTO eventoDTO);
 
     /**
      * Updates a evento.
      *
-     * @param evento the entity to update.
+     * @param eventoDTO the entity to update.
      * @return the persisted entity.
      */
-    Evento update(Evento evento);
+    EventoDTO update(EventoDTO eventoDTO);
 
     /**
      * Partially updates a evento.
      *
-     * @param evento the entity to update partially.
+     * @param eventoDTO the entity to update partially.
      * @return the persisted entity.
      */
-    Optional<Evento> partialUpdate(Evento evento);
+    Optional<EventoDTO> partialUpdate(EventoDTO eventoDTO);
 
     /**
      * Get all the eventos.
      *
      * @return the list of entities.
      */
-    List<Evento> findAll();
+    List<EventoDTO> findAll();
 
     /**
      * Get the "id" evento.
@@ -45,7 +46,7 @@ public interface EventoService {
      * @param id the id of the entity.
      * @return the entity.
      */
-    Optional<Evento> findOne(Long id);
+    Optional<EventoDTO> findOne(Long id);
 
     /**
      * Delete the "id" evento.
@@ -53,4 +54,9 @@ public interface EventoService {
      * @param id the id of the entity.
      */
     void delete(Long id);
+
+    /**
+     * Busca un Evento por el ID que le asignó la Cátedra.
+     */
+    void sincronizarEventosCatedra();
 }

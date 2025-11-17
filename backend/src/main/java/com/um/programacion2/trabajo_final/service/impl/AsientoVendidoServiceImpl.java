@@ -3,8 +3,12 @@ package com.um.programacion2.trabajo_final.service.impl;
 import com.um.programacion2.trabajo_final.domain.AsientoVendido;
 import com.um.programacion2.trabajo_final.repository.AsientoVendidoRepository;
 import com.um.programacion2.trabajo_final.service.AsientoVendidoService;
+import com.um.programacion2.trabajo_final.service.dto.AsientoVendidoDTO;
+import com.um.programacion2.trabajo_final.service.mapper.AsientoVendidoMapper;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.stereotype.Service;
@@ -21,56 +25,60 @@ public class AsientoVendidoServiceImpl implements AsientoVendidoService {
 
     private final AsientoVendidoRepository asientoVendidoRepository;
 
-    public AsientoVendidoServiceImpl(AsientoVendidoRepository asientoVendidoRepository) {
+    private final AsientoVendidoMapper asientoVendidoMapper;
+
+    public AsientoVendidoServiceImpl(AsientoVendidoRepository asientoVendidoRepository, AsientoVendidoMapper asientoVendidoMapper) {
         this.asientoVendidoRepository = asientoVendidoRepository;
+        this.asientoVendidoMapper = asientoVendidoMapper;
     }
 
     @Override
-    public AsientoVendido save(AsientoVendido asientoVendido) {
-        LOG.debug("Request to save AsientoVendido : {}", asientoVendido);
-        return asientoVendidoRepository.save(asientoVendido);
+    public AsientoVendidoDTO save(AsientoVendidoDTO asientoVendidoDTO) {
+        LOG.debug("Request to save AsientoVendido : {}", asientoVendidoDTO);
+        AsientoVendido asientoVendido = asientoVendidoMapper.toEntity(asientoVendidoDTO);
+        asientoVendido = asientoVendidoRepository.save(asientoVendido);
+        return asientoVendidoMapper.toDto(asientoVendido);
     }
 
     @Override
-    public AsientoVendido update(AsientoVendido asientoVendido) {
-        LOG.debug("Request to update AsientoVendido : {}", asientoVendido);
-        return asientoVendidoRepository.save(asientoVendido);
+    public AsientoVendidoDTO update(AsientoVendidoDTO asientoVendidoDTO) {
+        LOG.debug("Request to update AsientoVendido : {}", asientoVendidoDTO);
+        AsientoVendido asientoVendido = asientoVendidoMapper.toEntity(asientoVendidoDTO);
+        asientoVendido = asientoVendidoRepository.save(asientoVendido);
+        return asientoVendidoMapper.toDto(asientoVendido);
     }
 
     @Override
-    public Optional<AsientoVendido> partialUpdate(AsientoVendido asientoVendido) {
-        LOG.debug("Request to partially update AsientoVendido : {}", asientoVendido);
+    public Optional<AsientoVendidoDTO> partialUpdate(AsientoVendidoDTO asientoVendidoDTO) {
+        LOG.debug("Request to partially update AsientoVendido : {}", asientoVendidoDTO);
 
         return asientoVendidoRepository
-            .findById(asientoVendido.getId())
+            .findById(asientoVendidoDTO.getId())
             .map(existingAsientoVendido -> {
-                if (asientoVendido.getFila() != null) {
-                    existingAsientoVendido.setFila(asientoVendido.getFila());
-                }
-                if (asientoVendido.getColumna() != null) {
-                    existingAsientoVendido.setColumna(asientoVendido.getColumna());
-                }
-                if (asientoVendido.getPersona() != null) {
-                    existingAsientoVendido.setPersona(asientoVendido.getPersona());
-                }
+                asientoVendidoMapper.partialUpdate(existingAsientoVendido, asientoVendidoDTO);
 
                 return existingAsientoVendido;
             })
-            .map(asientoVendidoRepository::save);
+            .map(asientoVendidoRepository::save)
+            .map(asientoVendidoMapper::toDto);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<AsientoVendido> findAll() {
+    public List<AsientoVendidoDTO> findAll() {
         LOG.debug("Request to get all AsientoVendidos");
-        return asientoVendidoRepository.findAll();
+        return asientoVendidoRepository
+            .findAll()
+            .stream()
+            .map(asientoVendidoMapper::toDto)
+            .collect(Collectors.toCollection(LinkedList::new));
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Optional<AsientoVendido> findOne(Long id) {
+    public Optional<AsientoVendidoDTO> findOne(Long id) {
         LOG.debug("Request to get AsientoVendido : {}", id);
-        return asientoVendidoRepository.findById(id);
+        return asientoVendidoRepository.findById(id).map(asientoVendidoMapper::toDto);
     }
 
     @Override

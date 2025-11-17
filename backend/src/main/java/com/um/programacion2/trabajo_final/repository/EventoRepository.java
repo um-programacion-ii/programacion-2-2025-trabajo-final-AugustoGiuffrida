@@ -4,9 +4,13 @@ import com.um.programacion2.trabajo_final.domain.Evento;
 import org.springframework.data.jpa.repository.*;
 import org.springframework.stereotype.Repository;
 
+import java.util.Optional;
+
 /**
  * Spring Data JPA repository for the Evento entity.
  */
 @SuppressWarnings("unused")
 @Repository
-public interface EventoRepository extends JpaRepository<Evento, Long> {}
+public interface EventoRepository extends JpaRepository<Evento, Long> {
+    Optional<Evento> findByEventoIdCatedra(Long eventoIdCatedra);
+}

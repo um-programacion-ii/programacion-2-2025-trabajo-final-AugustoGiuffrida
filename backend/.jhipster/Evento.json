@@ -4,6 +4,7 @@
   },
   "applications": "*",
   "documentation": "Entidad para almacenar localmente la información de los eventos\\nsincronizados desde el servicio de la Cátedra.",
+  "dto": "mapstruct",
   "fields": [
     {
       "fieldName": "eventoIdCatedra",

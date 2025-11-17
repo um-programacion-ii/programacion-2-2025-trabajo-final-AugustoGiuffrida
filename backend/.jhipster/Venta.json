@@ -4,6 +4,7 @@
   },
   "applications": "*",
   "documentation": "Entidad para registrar las ventas realizadas.",
+  "dto": "mapstruct",
   "fields": [
     {
       "fieldName": "ventaIdCatedra",

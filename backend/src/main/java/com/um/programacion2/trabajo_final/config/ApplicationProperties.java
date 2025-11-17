@@ -11,6 +11,34 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "application", ignoreUnknownFields = false)
 public class ApplicationProperties {
 
+    private final Catedra catedra = new Catedra();
+
+    public Catedra getCatedra() {
+        return catedra;
+    }
+
+    public static class Catedra {
+
+        private String token;
+        private String eventosUrl;
+
+        public String getToken() {
+            return token;
+        }
+
+        public void setToken(String token) {
+            this.token = token;
+        }
+
+        public String getEventosUrl() {
+            return eventosUrl;
+        }
+
+        public void setEventosUrl(String eventosUrl) {
+            this.eventosUrl = eventosUrl;
+        }
+    }
+
     private final Liquibase liquibase = new Liquibase();
 
     // jhipster-needle-application-properties-property

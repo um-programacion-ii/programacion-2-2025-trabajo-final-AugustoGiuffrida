@@ -1,22 +1,20 @@
 package com.um.programacion2.trabajo_final.domain;
 
-import io.swagger.v3.oas.annotations.media.Schema;
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.Instant;
-import org.hibernate.annotations.Cache;
-import org.hibernate.annotations.CacheConcurrencyStrategy;
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * Entidad para almacenar localmente la información de los eventos
  * sincronizados desde el servicio de la Cátedra.
  */
-@Schema(description = "Entidad para almacenar localmente la información de los eventos\nsincronizados desde el servicio de la Cátedra.")
 @Entity
 @Table(name = "evento")
-@Cache(usage = CacheConcurrencyStrategy.READ_WRITE)
 @SuppressWarnings("common-java:DuplicatedBlocks")
 public class Evento implements Serializable {
 
@@ -63,8 +61,41 @@ public class Evento implements Serializable {
     @Column(name = "precio_entrada", precision = 21, scale = 2, nullable = false)
     private BigDecimal precioEntrada;
 
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "evento")
+    @JsonIgnoreProperties(value = { "evento", "user", "asientos" }, allowSetters = true)
+    private Set<Venta> ventas = new HashSet<>();
     // jhipster-needle-entity-add-field - JHipster will add fields here
 
+    public Set<Venta> getVentas() {
+        return this.ventas;
+    }
+
+    public Evento ventas(Set<Venta> ventas) {
+        this.setVentas(ventas);
+        return this;
+    }
+
+    public Evento addVenta(Venta venta) {
+        this.ventas.add(venta);
+        venta.setEvento(this);
+        return this;
+    }
+
+    public Evento removeVenta(Venta venta) {
+        this.ventas.remove(venta);
+        venta.setEvento(null);
+        return this;
+    }
+
+    public void setVentas(Set<Venta> ventas) {
+        if (this.ventas != null) {
+            this.ventas.forEach(i -> i.setEvento(null));
+        }
+        if (ventas != null) {
+            ventas.forEach(i -> i.setEvento(this));
+        }
+        this.ventas = ventas;
+    }
     public Long getId() {
         return this.id;
     }

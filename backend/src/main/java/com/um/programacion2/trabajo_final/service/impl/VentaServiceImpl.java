@@ -3,8 +3,12 @@ package com.um.programacion2.trabajo_final.service.impl;
 import com.um.programacion2.trabajo_final.domain.Venta;
 import com.um.programacion2.trabajo_final.repository.VentaRepository;
 import com.um.programacion2.trabajo_final.service.VentaService;
+import com.um.programacion2.trabajo_final.service.dto.VentaDTO;
+import com.um.programacion2.trabajo_final.service.mapper.VentaMapper;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
+import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.data.domain.Page;
@@ -23,69 +27,60 @@ public class VentaServiceImpl implements VentaService {
 
     private final VentaRepository ventaRepository;
 
-    public VentaServiceImpl(VentaRepository ventaRepository) {
+    private final VentaMapper ventaMapper;
+
+    public VentaServiceImpl(VentaRepository ventaRepository, VentaMapper ventaMapper) {
         this.ventaRepository = ventaRepository;
+        this.ventaMapper = ventaMapper;
     }
 
     @Override
-    public Venta save(Venta venta) {
-        LOG.debug("Request to save Venta : {}", venta);
-        return ventaRepository.save(venta);
+    public VentaDTO save(VentaDTO ventaDTO) {
+        LOG.debug("Request to save Venta : {}", ventaDTO);
+        Venta venta = ventaMapper.toEntity(ventaDTO);
+        venta = ventaRepository.save(venta);
+        return ventaMapper.toDto(venta);
     }
 
     @Override
-    public Venta update(Venta venta) {
-        LOG.debug("Request to update Venta : {}", venta);
-        return ventaRepository.save(venta);
+    public VentaDTO update(VentaDTO ventaDTO) {
+        LOG.debug("Request to update Venta : {}", ventaDTO);
+        Venta venta = ventaMapper.toEntity(ventaDTO);
+        venta = ventaRepository.save(venta);
+        return ventaMapper.toDto(venta);
     }
 
     @Override
-    public Optional<Venta> partialUpdate(Venta venta) {
-        LOG.debug("Request to partially update Venta : {}", venta);
+    public Optional<VentaDTO> partialUpdate(VentaDTO ventaDTO) {
+        LOG.debug("Request to partially update Venta : {}", ventaDTO);
 
         return ventaRepository
-            .findById(venta.getId())
+            .findById(ventaDTO.getId())
             .map(existingVenta -> {
-                if (venta.getVentaIdCatedra() != null) {
-                    existingVenta.setVentaIdCatedra(venta.getVentaIdCatedra());
-                }
-                if (venta.getFechaVenta() != null) {
-                    existingVenta.setFechaVenta(venta.getFechaVenta());
-                }
-                if (venta.getPrecioVenta() != null) {
-                    existingVenta.setPrecioVenta(venta.getPrecioVenta());
-                }
-                if (venta.getResultado() != null) {
-                    existingVenta.setResultado(venta.getResultado());
-                }
-                if (venta.getDescripcion() != null) {
-                    existingVenta.setDescripcion(venta.getDescripcion());
-                }
-                if (venta.getEstadoVenta() != null) {
-                    existingVenta.setEstadoVenta(venta.getEstadoVenta());
-                }
+                ventaMapper.partialUpdate(existingVenta, ventaDTO);
 
                 return existingVenta;
             })
-            .map(ventaRepository::save);
+            .map(ventaRepository::save)
+            .map(ventaMapper::toDto);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public List<Venta> findAll() {
+    public List<VentaDTO> findAll() {
         LOG.debug("Request to get all Ventas");
-        return ventaRepository.findAll();
+        return ventaRepository.findAll().stream().map(ventaMapper::toDto).collect(Collectors.toCollection(LinkedList::new));
     }
 
-    public Page<Venta> findAllWithEagerRelationships(Pageable pageable) {
-        return ventaRepository.findAllWithEagerRelationships(pageable);
+    public Page<VentaDTO> findAllWithEagerRelationships(Pageable pageable) {
+        return ventaRepository.findAllWithEagerRelationships(pageable).map(ventaMapper::toDto);
     }
 
     @Override
     @Transactional(readOnly = true)
-    public Optional<Venta> findOne(Long id) {
+    public Optional<VentaDTO> findOne(Long id) {
         LOG.debug("Request to get Venta : {}", id);
-        return ventaRepository.findOneWithEagerRelationships(id);
+        return ventaRepository.findOneWithEagerRelationships(id).map(ventaMapper::toDto);
     }
 
     @Override

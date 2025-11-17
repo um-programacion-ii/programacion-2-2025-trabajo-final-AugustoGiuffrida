@@ -1,6 +1,6 @@
 package com.um.programacion2.trabajo_final.service;
 
-import com.um.programacion2.trabajo_final.domain.Venta;
+import com.um.programacion2.trabajo_final.service.dto.VentaDTO;
 import java.util.List;
 import java.util.Optional;
 import org.springframework.data.domain.Page;
@@ -13,33 +13,33 @@ public interface VentaService {
     /**
      * Save a venta.
      *
-     * @param venta the entity to save.
+     * @param ventaDTO the entity to save.
      * @return the persisted entity.
      */
-    Venta save(Venta venta);
+    VentaDTO save(VentaDTO ventaDTO);
 
     /**
      * Updates a venta.
      *
-     * @param venta the entity to update.
+     * @param ventaDTO the entity to update.
      * @return the persisted entity.
      */
-    Venta update(Venta venta);
+    VentaDTO update(VentaDTO ventaDTO);
 
     /**
      * Partially updates a venta.
      *
-     * @param venta the entity to update partially.
+     * @param ventaDTO the entity to update partially.
      * @return the persisted entity.
      */
-    Optional<Venta> partialUpdate(Venta venta);
+    Optional<VentaDTO> partialUpdate(VentaDTO ventaDTO);
 
     /**
      * Get all the ventas.
      *
      * @return the list of entities.
      */
-    List<Venta> findAll();
+    List<VentaDTO> findAll();
 
     /**
      * Get all the ventas with eager load of many-to-many relationships.
@@ -47,7 +47,7 @@ public interface VentaService {
      * @param pageable the pagination information.
      * @return the list of entities.
      */
-    Page<Venta> findAllWithEagerRelationships(Pageable pageable);
+    Page<VentaDTO> findAllWithEagerRelationships(Pageable pageable);
 
     /**
      * Get the "id" venta.
@@ -55,7 +55,7 @@ public interface VentaService {
      * @param id the id of the entity.
      * @return the entity.
      */
-    Optional<Venta> findOne(Long id);
+    Optional<VentaDTO> findOne(Long id);
 
     /**
      * Delete the "id" venta.

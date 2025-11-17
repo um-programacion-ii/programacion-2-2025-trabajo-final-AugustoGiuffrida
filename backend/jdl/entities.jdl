@@ -71,3 +71,4 @@ relationship OneToMany {
 
 // --- Opciones Adicionales ---
 service all with serviceImpl
+dto all with mapstruct

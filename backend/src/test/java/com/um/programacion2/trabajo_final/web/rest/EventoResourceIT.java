@@ -12,6 +12,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.um.programacion2.trabajo_final.IntegrationTest;
 import com.um.programacion2.trabajo_final.domain.Evento;
 import com.um.programacion2.trabajo_final.repository.EventoRepository;
+import com.um.programacion2.trabajo_final.service.dto.EventoDTO;
+import com.um.programacion2.trabajo_final.service.mapper.EventoMapper;
 import jakarta.persistence.EntityManager;
 import java.math.BigDecimal;
 import java.time.Instant;
@@ -77,6 +79,9 @@ class EventoResourceIT {
 
     @Autowired
     private EventoRepository eventoRepository;
+
+    @Autowired
+    private EventoMapper eventoMapper;
 
     @Autowired
     private EntityManager em;
@@ -146,18 +151,20 @@ class EventoResourceIT {
     void createEvento() throws Exception {
         long databaseSizeBeforeCreate = getRepositoryCount();
         // Create the Evento
-        var returnedEvento = om.readValue(
+        EventoDTO eventoDTO = eventoMapper.toDto(evento);
+        var returnedEventoDTO = om.readValue(
             restEventoMockMvc
-                .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(evento)))
+                .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(eventoDTO)))
                 .andExpect(status().isCreated())
                 .andReturn()
                 .getResponse()
                 .getContentAsString(),
-            Evento.class
+            EventoDTO.class
         );
 
         // Validate the Evento in the database
         assertIncrementedRepositoryCount(databaseSizeBeforeCreate);
+        var returnedEvento = eventoMapper.toEntity(returnedEventoDTO);
         assertEventoUpdatableFieldsEquals(returnedEvento, getPersistedEvento(returnedEvento));
 
         insertedEvento = returnedEvento;
@@ -168,12 +175,13 @@ class EventoResourceIT {
     void createEventoWithExistingId() throws Exception {
         // Create the Evento with an existing ID
         evento.setId(1L);
+        EventoDTO eventoDTO = eventoMapper.toDto(evento);
 
         long databaseSizeBeforeCreate = getRepositoryCount();
 
         // An entity with an existing ID cannot be created, so this API call must fail
         restEventoMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(evento)))
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(eventoDTO)))
             .andExpect(status().isBadRequest());
 
         // Validate the Evento in the database
@@ -188,9 +196,10 @@ class EventoResourceIT {
         evento.setEventoIdCatedra(null);
 
         // Create the Evento, which fails.
+        EventoDTO eventoDTO = eventoMapper.toDto(evento);
 
         restEventoMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(evento)))
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(eventoDTO)))
             .andExpect(status().isBadRequest());
 
         assertSameRepositoryCount(databaseSizeBeforeTest);
@@ -204,9 +213,10 @@ class EventoResourceIT {
         evento.setTitulo(null);
 
         // Create the Evento, which fails.
+        EventoDTO eventoDTO = eventoMapper.toDto(evento);
 
         restEventoMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(evento)))
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(eventoDTO)))
             .andExpect(status().isBadRequest());
 
         assertSameRepositoryCount(databaseSizeBeforeTest);
@@ -220,9 +230,10 @@ class EventoResourceIT {
         evento.setFecha(null);
 
         // Create the Evento, which fails.
+        EventoDTO eventoDTO = eventoMapper.toDto(evento);
 
         restEventoMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(evento)))
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(eventoDTO)))
             .andExpect(status().isBadRequest());
 
         assertSameRepositoryCount(databaseSizeBeforeTest);
@@ -236,9 +247,10 @@ class EventoResourceIT {
         evento.setFilaAsientos(null);
 
         // Create the Evento, which fails.
+        EventoDTO eventoDTO = eventoMapper.toDto(evento);
 
         restEventoMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(evento)))
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(eventoDTO)))
             .andExpect(status().isBadRequest());
 
         assertSameRepositoryCount(databaseSizeBeforeTest);
@@ -252,9 +264,10 @@ class EventoResourceIT {
         evento.setColumnAsientos(null);
 
         // Create the Evento, which fails.
+        EventoDTO eventoDTO = eventoMapper.toDto(evento);
 
         restEventoMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(evento)))
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(eventoDTO)))
             .andExpect(status().isBadRequest());
 
         assertSameRepositoryCount(databaseSizeBeforeTest);
@@ -268,9 +281,10 @@ class EventoResourceIT {
         evento.setPrecioEntrada(null);
 
         // Create the Evento, which fails.
+        EventoDTO eventoDTO = eventoMapper.toDto(evento);
 
         restEventoMockMvc
-            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(evento)))
+            .perform(post(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(eventoDTO)))
             .andExpect(status().isBadRequest());
 
         assertSameRepositoryCount(databaseSizeBeforeTest);
@@ -354,12 +368,11 @@ class EventoResourceIT {
             .filaAsientos(UPDATED_FILA_ASIENTOS)
             .columnAsientos(UPDATED_COLUMN_ASIENTOS)
             .precioEntrada(UPDATED_PRECIO_ENTRADA);
+        EventoDTO eventoDTO = eventoMapper.toDto(updatedEvento);
 
         restEventoMockMvc
             .perform(
-                put(ENTITY_API_URL_ID, updatedEvento.getId())
-                    .contentType(MediaType.APPLICATION_JSON)
-                    .content(om.writeValueAsBytes(updatedEvento))
+                put(ENTITY_API_URL_ID, eventoDTO.getId()).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(eventoDTO))
             )
             .andExpect(status().isOk());
 
@@ -374,9 +387,14 @@ class EventoResourceIT {
         long databaseSizeBeforeUpdate = getRepositoryCount();
         evento.setId(longCount.incrementAndGet());
 
+        // Create the Evento
+        EventoDTO eventoDTO = eventoMapper.toDto(evento);
+
         // If the entity doesn't have an ID, it will throw BadRequestAlertException
         restEventoMockMvc
-            .perform(put(ENTITY_API_URL_ID, evento.getId()).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(evento)))
+            .perform(
+                put(ENTITY_API_URL_ID, eventoDTO.getId()).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(eventoDTO))
+            )
             .andExpect(status().isBadRequest());
 
         // Validate the Evento in the database
@@ -389,12 +407,15 @@ class EventoResourceIT {
         long databaseSizeBeforeUpdate = getRepositoryCount();
         evento.setId(longCount.incrementAndGet());
 
+        // Create the Evento
+        EventoDTO eventoDTO = eventoMapper.toDto(evento);
+
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restEventoMockMvc
             .perform(
                 put(ENTITY_API_URL_ID, longCount.incrementAndGet())
                     .contentType(MediaType.APPLICATION_JSON)
-                    .content(om.writeValueAsBytes(evento))
+                    .content(om.writeValueAsBytes(eventoDTO))
             )
             .andExpect(status().isBadRequest());
 
@@ -408,9 +429,12 @@ class EventoResourceIT {
         long databaseSizeBeforeUpdate = getRepositoryCount();
         evento.setId(longCount.incrementAndGet());
 
+        // Create the Evento
+        EventoDTO eventoDTO = eventoMapper.toDto(evento);
+
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restEventoMockMvc
-            .perform(put(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(evento)))
+            .perform(put(ENTITY_API_URL).contentType(MediaType.APPLICATION_JSON).content(om.writeValueAsBytes(eventoDTO)))
             .andExpect(status().isMethodNotAllowed());
 
         // Validate the Evento in the database
@@ -495,10 +519,15 @@ class EventoResourceIT {
         long databaseSizeBeforeUpdate = getRepositoryCount();
         evento.setId(longCount.incrementAndGet());
 
+        // Create the Evento
+        EventoDTO eventoDTO = eventoMapper.toDto(evento);
+
         // If the entity doesn't have an ID, it will throw BadRequestAlertException
         restEventoMockMvc
             .perform(
-                patch(ENTITY_API_URL_ID, evento.getId()).contentType("application/merge-patch+json").content(om.writeValueAsBytes(evento))
+                patch(ENTITY_API_URL_ID, eventoDTO.getId())
+                    .contentType("application/merge-patch+json")
+                    .content(om.writeValueAsBytes(eventoDTO))
             )
             .andExpect(status().isBadRequest());
 
@@ -512,12 +541,15 @@ class EventoResourceIT {
         long databaseSizeBeforeUpdate = getRepositoryCount();
         evento.setId(longCount.incrementAndGet());
 
+        // Create the Evento
+        EventoDTO eventoDTO = eventoMapper.toDto(evento);
+
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restEventoMockMvc
             .perform(
                 patch(ENTITY_API_URL_ID, longCount.incrementAndGet())
                     .contentType("application/merge-patch+json")
-                    .content(om.writeValueAsBytes(evento))
+                    .content(om.writeValueAsBytes(eventoDTO))
             )
             .andExpect(status().isBadRequest());
 
@@ -531,9 +563,12 @@ class EventoResourceIT {
         long databaseSizeBeforeUpdate = getRepositoryCount();
         evento.setId(longCount.incrementAndGet());
 
+        // Create the Evento
+        EventoDTO eventoDTO = eventoMapper.toDto(evento);
+
         // If url ID doesn't match entity ID, it will throw BadRequestAlertException
         restEventoMockMvc
-            .perform(patch(ENTITY_API_URL).contentType("application/merge-patch+json").content(om.writeValueAsBytes(evento)))
+            .perform(patch(ENTITY_API_URL).contentType("application/merge-patch+json").content(om.writeValueAsBytes(eventoDTO)))
             .andExpect(status().isMethodNotAllowed());
 
         // Validate the Evento in the database
