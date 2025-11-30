@@ -1,17 +1,17 @@
-# Puerto en el que correrá el proxy
 server:
   port: 8081
 
 spring:
   application:
     name: proxy
+
   # Configuración para el REDIS de la CÁTEDRA
   data:
     redis:
       host: 192.168.194.250
       port: 6379
-      # Si el Redis de la cátedra requiere contraseña, se añade aquí:
-      # password: "la_password_si_la_hay"
+      # Si se requiere contraseña, se añade aquí:
+      # password: "example_password"
 
   # Configuración para el KAFKA de la CÁTEDRA
   kafka:
