@@ -21,7 +21,7 @@ public class ProxyServiceImpl  implements ProxyService {
 
     public ProxyServiceImpl(RestTemplate restTemplate, ApplicationProperties applicationProperties) {
         this.restTemplate = restTemplate;
-        this.proxyUrl = applicationProperties.getProxyUrl();
+        this.proxyUrl = applicationProperties.getCatedra().getProxyUrl();
     }
 
     @Override
