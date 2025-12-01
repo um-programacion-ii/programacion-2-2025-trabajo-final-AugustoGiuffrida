@@ -1,7 +1,7 @@
 package com.um.programacion2.trabajo_final.domain;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
-import com.um.programacion2.trabajo_final.domain.enumeration.EstadoVenta;
+import com.um.programacion2.trabajo_final.enumeration.EstadoVenta;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;

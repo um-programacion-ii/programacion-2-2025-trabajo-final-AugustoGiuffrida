@@ -1,6 +1,6 @@
 package com.um.programacion2.trabajo_final.service.dto;
 
-import com.um.programacion2.trabajo_final.domain.enumeration.EstadoVenta;
+import com.um.programacion2.trabajo_final.enumeration.EstadoVenta;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 import java.io.Serializable;
