@@ -1,4 +1,4 @@
-package com.um.programacion2.trabajo_final.domain.enumeration;
+package com.um.programacion2.trabajo_final.enumeration;
 
 /**
  * Enum para manejar el estado de la venta local

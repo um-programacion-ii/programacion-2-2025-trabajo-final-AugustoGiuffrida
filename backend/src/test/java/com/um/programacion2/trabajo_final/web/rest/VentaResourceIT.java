@@ -14,7 +14,7 @@ import com.um.programacion2.trabajo_final.IntegrationTest;
 import com.um.programacion2.trabajo_final.domain.Evento;
 import com.um.programacion2.trabajo_final.domain.User;
 import com.um.programacion2.trabajo_final.domain.Venta;
-import com.um.programacion2.trabajo_final.domain.enumeration.EstadoVenta;
+import com.um.programacion2.trabajo_final.enumeration.EstadoVenta;
 import com.um.programacion2.trabajo_final.repository.UserRepository;
 import com.um.programacion2.trabajo_final.repository.VentaRepository;
 import com.um.programacion2.trabajo_final.service.VentaService;

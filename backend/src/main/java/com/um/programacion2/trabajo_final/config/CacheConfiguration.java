@@ -23,6 +23,7 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import tech.jhipster.config.JHipsterProperties;
 import tech.jhipster.config.cache.PrefixedKeyGenerator;
+import org.redisson.api.RedissonClient;
 
 @Configuration
 @EnableCaching
@@ -31,6 +32,13 @@ public class CacheConfiguration {
     private GitProperties gitProperties;
     private BuildProperties buildProperties;
 
+    @Bean
+    public RedissonClient redissonClient(JHipsterProperties jHipsterProperties) {
+        JHipsterProperties.Cache.Redis redisProperties = jHipsterProperties.getCache().getRedis();
+        Config config = new Config();
+        config.useSingleServer().setAddress(redisProperties.getServer()[0]);
+        return Redisson.create(config);
+    }
     @Bean
     public javax.cache.configuration.Configuration<Object, Object> jcacheConfiguration(JHipsterProperties jHipsterProperties) {
         MutableConfiguration<Object, Object> jcacheConfig = new MutableConfiguration<>();
