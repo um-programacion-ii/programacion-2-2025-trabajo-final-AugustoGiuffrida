@@ -1,7 +1,10 @@
 package com.um.programacion2.trabajo_final.web.rest;
 
 import com.um.programacion2.trabajo_final.repository.VentaRepository;
+import com.um.programacion2.trabajo_final.security.SecurityUtils;
 import com.um.programacion2.trabajo_final.service.VentaService;
+import com.um.programacion2.trabajo_final.service.dto.ConfirmarCompraDTO;
+import com.um.programacion2.trabajo_final.service.dto.SolicitudBloqueoDTO;
 import com.um.programacion2.trabajo_final.service.dto.VentaDTO;
 import com.um.programacion2.trabajo_final.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
@@ -42,6 +45,29 @@ public class VentaResource {
         this.ventaRepository = ventaRepository;
     }
 
+    @PostMapping("/bloquear")
+    public ResponseEntity<Void> bloquearAsientos(@RequestBody SolicitudBloqueoDTO solicitud) {
+        String login = SecurityUtils.getCurrentUserLogin()
+            .orElseThrow(() -> new RuntimeException("No autenticado"));
+
+        LOG.debug("REST request para bloquear asientos: {}", solicitud);
+
+        ventaService.bloquearAsientos(login, solicitud);
+
+        return ResponseEntity.ok().build();
+    }
+
+    @PostMapping("/comprar")
+    public ResponseEntity<VentaDTO> comprar(@RequestBody ConfirmarCompraDTO compraDTO) {
+        String login = SecurityUtils.getCurrentUserLogin()
+            .orElseThrow(() -> new RuntimeException("No autenticado"));
+
+        LOG.debug("REST request para realizar compra para usuario: {}", login);
+
+        VentaDTO resultado = ventaService.realizarCompra(login, compraDTO);
+
+        return ResponseEntity.ok(resultado);
+    }
     /**
      * {@code POST  /ventas} : Create a new venta.
      *

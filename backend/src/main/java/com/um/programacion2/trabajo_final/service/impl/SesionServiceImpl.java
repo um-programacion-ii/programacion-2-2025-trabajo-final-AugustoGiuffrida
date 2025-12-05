@@ -16,7 +16,7 @@ import java.util.concurrent.TimeUnit;
 public class SesionServiceImpl implements SesionService {
 
     private final Logger log = LoggerFactory.getLogger(SesionServiceImpl.class);
-    private final RedissonClient redissonClient;
+    private final RedissonClient redissonClient; //Permite la conexion entre java y redis
 
     public SesionServiceImpl(RedissonClient redissonClient) {
         this.redissonClient = redissonClient;
@@ -34,7 +34,7 @@ public class SesionServiceImpl implements SesionService {
         // Darle un tiempo de vida (30 min)
         bucket.expire(30, TimeUnit.MINUTES);
     }
-
+    //RBucket: Es una de las estructuras de datos que Redisson ofrece, diseñada para almacenar objetos en Redis.
     @Override
     public Optional<SesionVentaDTO> obtenerSesion(String login) {
         log.debug("Recuperando sesión de Redis local para usuario: {}", login);

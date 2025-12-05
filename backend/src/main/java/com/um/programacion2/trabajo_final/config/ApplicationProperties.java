@@ -11,27 +11,41 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "application", ignoreUnknownFields = false)
 public class ApplicationProperties {
 
-    private String proxyUrl;
-
     private final Catedra catedra = new Catedra();
 
     public Catedra getCatedra() {
         return catedra;
     }
 
-    public String getProxyUrl() {
-        return proxyUrl;
-    }
-
-    public void setProxyUrl(String proxyUrl) {
-        this.proxyUrl = proxyUrl;
-    }
-
     public static class Catedra {
-
         private String token;
+        private String ventaUrl;
+        private String proxyUrl;
         private String eventosUrl;
+        private String bloqueoUrl;
 
+        public String getBloqueoUrl() {
+            return bloqueoUrl;
+        }
+
+        public void setBloqueoUrl(String bloqueoUrl) {
+            this.bloqueoUrl = bloqueoUrl;
+        }
+
+        public String getVentaUrl() {
+            return ventaUrl;
+        }
+        public void setVentaUrl(String ventaUrl) {
+            this.ventaUrl = ventaUrl;
+        }
+
+        public String getProxyUrl() {
+            return proxyUrl;
+        }
+
+        public void setProxyUrl(String proxyUrl) {
+            this.proxyUrl = proxyUrl;
+        }
         public String getToken() {
             return token;
         }
