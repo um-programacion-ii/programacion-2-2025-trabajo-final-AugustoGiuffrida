@@ -118,3 +118,4 @@ application:
     eventos-url: "http://192.168.194.250:8080/api/endpoints/v1/eventos"
     venta-url: "http://192.168.194.250:8080/api/endpoints/v1/realizar-venta"
     proxy-url: "http://localhost:8081/api"
+    bloqueo-url: "http://192.168.194.250:8080/api/endpoints/v1/bloquear-asientos"

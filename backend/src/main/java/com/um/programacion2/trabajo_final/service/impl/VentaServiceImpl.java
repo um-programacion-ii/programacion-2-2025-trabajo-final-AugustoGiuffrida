@@ -1,22 +1,20 @@
 package com.um.programacion2.trabajo_final.service.impl;
 
+import com.um.programacion2.trabajo_final.config.ApplicationProperties;
 import com.um.programacion2.trabajo_final.domain.AsientoVendido;
 import com.um.programacion2.trabajo_final.domain.Evento;
 import com.um.programacion2.trabajo_final.domain.User;
 import com.um.programacion2.trabajo_final.domain.Venta;
 import com.um.programacion2.trabajo_final.enumeration.EstadoVenta;
+import com.um.programacion2.trabajo_final.enumeration.EstadoSesion;
 import com.um.programacion2.trabajo_final.repository.AsientoVendidoRepository;
 import com.um.programacion2.trabajo_final.repository.EventoRepository;
 import com.um.programacion2.trabajo_final.repository.UserRepository;
 import com.um.programacion2.trabajo_final.repository.VentaRepository;
 import com.um.programacion2.trabajo_final.service.SesionService;
 import com.um.programacion2.trabajo_final.service.VentaService;
-import com.um.programacion2.trabajo_final.service.dto.ConfirmarCompraDTO;
-import com.um.programacion2.trabajo_final.service.dto.SesionVentaDTO;
-import com.um.programacion2.trabajo_final.service.dto.VentaDTO;
-import com.um.programacion2.trabajo_final.service.dto.catedra.AsientoVentaCatedraDTO;
-import com.um.programacion2.trabajo_final.service.dto.catedra.VentaCatedraRequest;
-import com.um.programacion2.trabajo_final.service.dto.catedra.VentaCatedraResponse;
+import com.um.programacion2.trabajo_final.service.dto.*;
+import com.um.programacion2.trabajo_final.service.dto.catedra.*;
 import com.um.programacion2.trabajo_final.service.mapper.VentaMapper;
 
 import java.util.ArrayList;
@@ -31,6 +29,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.client.RestTemplate;
+import java.time.Instant;
 
 /**
  * Service Implementation for managing {@link com.um.programacion2.trabajo_final.domain.Venta}.
@@ -41,43 +40,115 @@ public class VentaServiceImpl implements VentaService {
 
     private static final Logger LOG = LoggerFactory.getLogger(VentaServiceImpl.class);
 
-    private final VentaRepository ventaRepository;
-    private final VentaMapper ventaMapper;
-    private final AsientoVendidoRepository asientoVendidoRepository;
-    private final EventoRepository eventoRepository;
-    private final UserRepository userRepository;
-    private final SesionService sesionService;
-    private final RestTemplate restTemplate;
     private final String catedraVentaUrl;
+    private final VentaMapper ventaMapper;
+    private final String catedraBloqueoUrl;
+    private final RestTemplate restTemplate;
+    private final SesionService sesionService;
+    private final UserRepository userRepository;
+    private final VentaRepository ventaRepository;
+    private final EventoRepository eventoRepository;
+    private final AsientoVendidoRepository asientoVendidoRepository;
 
-    public VentaServiceImpl(VentaRepository ventaRepository, VentaMapper ventaMapper, AsientoVendidoRepository asientoVendidoRepository, EventoRepository eventoRepository, UserRepository userRepository, SesionService sesionService, RestTemplate restTemplate, com.um.programacion2.trabajo_final.config.ApplicationProperties applicationProperties) {
-        this.ventaRepository = ventaRepository;
+    public VentaServiceImpl(
+        VentaMapper ventaMapper,
+        RestTemplate restTemplate,
+        SesionService sesionService,
+        UserRepository userRepository,
+        VentaRepository ventaRepository,
+        EventoRepository eventoRepository,
+        ApplicationProperties applicationProperties,
+        AsientoVendidoRepository asientoVendidoRepository
+    ) {
         this.ventaMapper = ventaMapper;
-        this.asientoVendidoRepository = asientoVendidoRepository;
-        this.eventoRepository = eventoRepository;
-        this.userRepository = userRepository;
-        this.sesionService = sesionService;
         this.restTemplate = restTemplate;
-        this.catedraVentaUrl = applicationProperties.getCatedra().getVentaUrl();;
+        this.sesionService = sesionService;
+        this.userRepository = userRepository;
+        this.ventaRepository = ventaRepository;
+        this.eventoRepository = eventoRepository;
+        this.asientoVendidoRepository = asientoVendidoRepository;
+        this.catedraVentaUrl = applicationProperties.getCatedra().getVentaUrl();
+        this.catedraBloqueoUrl = applicationProperties.getCatedra().getBloqueoUrl();
+    }
+
+    @Override
+    public void bloquearAsientos(String login, SolicitudBloqueoDTO solicitudDTO) {
+        LOG.debug("Solicitando bloqueo de asientos para usuario: {}", login);
+
+        // 1. Construir Request para Cátedra
+        BloqueoRequest request = new BloqueoRequest();
+        request.setEventoId(solicitudDTO.getEventoId());
+
+        List<AsientoBloqueoDTO> asientosCatedra = new ArrayList<>();
+        for (AsientoSesionDTO a : solicitudDTO.getAsientos()) {
+            asientosCatedra.add(new AsientoBloqueoDTO(a.getFila(), a.getColumna()));
+        }
+        request.setAsientos(asientosCatedra);
+
+        // 2. Llamar a Cátedra
+        BloqueoResponse response;
+        try {
+            response = restTemplate.postForObject(catedraBloqueoUrl, request, BloqueoResponse.class);
+        } catch (Exception e) {
+            throw new RuntimeException("Error al conectar con Cátedra para bloquear: " + e.getMessage());
+        }
+
+        if (response == null || !Boolean.TRUE.equals(response.getResultado())) {
+            throw new RuntimeException("No se pudieron bloquear los asientos: " + (response != null ? response.getDescripcion() : "Error desconocido"));
+        }
+
+        // 3. Si el bloqueo fue exitoso, ACTUALIZAR LA SESIÓN EN REDIS
+        actualizarSesionConBloqueo(login, solicitudDTO);
+    }
+
+    private void actualizarSesionConBloqueo(String login, SolicitudBloqueoDTO solicitud) {
+        // Recuperamos o creamos la sesión
+        SesionVentaDTO sesion = new SesionVentaDTO();
+        sesion.setEventoId(solicitud.getEventoId());
+        sesion.setAsientosSeleccionados(solicitud.getAsientos());
+        sesion.setEstadoActual(EstadoSesion.CONFIRMANDO);
+
+        // Guardamos en Redis usando el servicio de sesión que ya tenemos
+        sesionService.guardarSesion(login, sesion);
+        LOG.info("Sesión actualizada en Redis con asientos bloqueados para: {}", login);
     }
 
     @Override
     public VentaDTO realizarCompra(String login, ConfirmarCompraDTO compraDTO) {
         LOG.debug("Iniciando proceso de compra para usuario: {}", login);
 
-        // 1. Recuperar la sesión del usuario
-        SesionVentaDTO sesion = sesionService.obtenerSesion(login)
+        SesionVentaDTO sesion = recuperarSesion(login);
+
+        Evento evento = recuperarEvento(sesion.getEventoId());
+
+        VentaCatedraRequest requestCatedra = construirRequest(sesion,evento,compraDTO);
+
+        VentaCatedraResponse respuestaCatedra = llamarApi(requestCatedra);
+
+        Venta ventaLocal = guardarVenta(login,respuestaCatedra,evento);
+
+        procesarResultadoVenta(login,ventaLocal,respuestaCatedra,compraDTO);
+
+        return ventaMapper.toDto(ventaLocal);
+    }
+
+    // --- Helper Methods ---
+
+    private SesionVentaDTO recuperarSesion(String login) {
+        return sesionService.obtenerSesion(login)
             .orElseThrow(() -> new RuntimeException("No se encontró una sesión de compra activa."));
+    }
 
-        // 2. [CAMBIO] Recuperar el Evento localmente AHORA para obtener el precio
-        Evento evento = eventoRepository.findByEventoIdCatedra(sesion.getEventoId())
+    private Evento recuperarEvento(Long id) {
+        return eventoRepository.findByEventoIdCatedra(id)
             .orElseThrow(() -> new RuntimeException("Evento no encontrado localmente. Sincronice los eventos primero."));
+    }
 
-        // 3. Construir el Request para la Cátedra (Ahora con fecha y precio)
-        VentaCatedraRequest requestCatedra = new VentaCatedraRequest();
-        requestCatedra.setEventoId(sesion.getEventoId());
-        requestCatedra.setFecha(java.time.Instant.now()); // <-- Agregamos Fecha actual
-        requestCatedra.setPrecioVenta(evento.getPrecioEntrada()); // <-- Agregamos el Precio del evento
+    private VentaCatedraRequest construirRequest(SesionVentaDTO sesion, Evento evento, ConfirmarCompraDTO compraDTO){
+        VentaCatedraRequest request = new VentaCatedraRequest();
+        request.setEventoId(sesion.getEventoId());
+        request.setFecha(java.time.Instant.now());
+        request.setPrecioVenta(evento.getPrecioEntrada());
 
         List<AsientoVentaCatedraDTO> asientosCatedra = new ArrayList<>();
         for (ConfirmarCompraDTO.DetalleAsientoCompra detalle : compraDTO.getDetalles()) {
@@ -87,47 +158,48 @@ public class VentaServiceImpl implements VentaService {
                 detalle.getNombrePersona()
             ));
         }
-        requestCatedra.setAsientos(asientosCatedra);
+        request.setAsientos(asientosCatedra);
+        return request;
+    }
 
-        // 4. Llamar a la API de la Cátedra
-        VentaCatedraResponse respuestaCatedra;
+    private VentaCatedraResponse llamarApi(VentaCatedraRequest requestCatedra){
         try {
             LOG.info("Enviando solicitud de venta a Cátedra: {}", requestCatedra);
-            respuestaCatedra = restTemplate.postForObject(catedraVentaUrl, requestCatedra, VentaCatedraResponse.class);
+            VentaCatedraResponse response = restTemplate.postForObject(catedraVentaUrl, requestCatedra, VentaCatedraResponse.class);
+            if (response == null) {
+                throw new RuntimeException("Respuesta nula de la Cátedra");
+            }
+            return response;
         } catch (Exception e) {
-            // Tip: Esto te ayudará a ver si la cátedra devuelve un error legible
             LOG.error("Error al llamar a Cátedra. Request enviado: precio={}, fecha={}", requestCatedra.getPrecioVenta(), requestCatedra.getFecha());
             throw new RuntimeException("Error al comunicarse con el servicio de ventas de la Cátedra: " + e.getMessage());
         }
+    }
 
-        if (respuestaCatedra == null) {
-            throw new RuntimeException("Respuesta nula de la Cátedra");
-        }
-
-        // 5. Guardar la Venta en Local (MySQL)
+    private Venta guardarVenta(String login, VentaCatedraResponse response, Evento evento){
         User user = userRepository.findOneByLogin(login).orElseThrow();
-        // (Ya tenemos la variable 'evento' recuperada en el paso 2)
 
         Venta ventaLocal = new Venta();
         ventaLocal.setUser(user);
         ventaLocal.setEvento(evento);
-        ventaLocal.setFechaVenta(respuestaCatedra.getFechaVenta());
-        ventaLocal.setPrecioVenta(respuestaCatedra.getPrecioVenta());
-        ventaLocal.setResultado(respuestaCatedra.getResultado());
-        ventaLocal.setDescripcion(respuestaCatedra.getDescripcion());
+        ventaLocal.setFechaVenta(response.getFechaVenta());
+        ventaLocal.setPrecioVenta(response.getPrecioVenta());
+        ventaLocal.setResultado(response.getResultado());
+        ventaLocal.setDescripcion(response.getDescripcion());
 
-        // Si fue exitosa, guardamos el ID de cátedra y estado Confirmada
-        if (Boolean.TRUE.equals(respuestaCatedra.getResultado())) {
-            ventaLocal.setVentaIdCatedra(respuestaCatedra.getVentaId());
+        if (Boolean.TRUE.equals(response.getResultado())) {
+            ventaLocal.setVentaIdCatedra(response.getVentaId());
             ventaLocal.setEstadoVenta(EstadoVenta.CONFIRMADA);
         } else {
             ventaLocal.setEstadoVenta(EstadoVenta.RECHAZADA);
         }
 
         ventaLocal = ventaRepository.save(ventaLocal);
+        return ventaLocal;
+    }
 
-        // 6. Guardar los Asientos Vendidos (Detalle)
-        if (Boolean.TRUE.equals(respuestaCatedra.getResultado())) {
+    private void procesarResultadoVenta(String login, Venta ventaLocal ,VentaCatedraResponse response, ConfirmarCompraDTO compraDTO){
+        if (Boolean.TRUE.equals(response.getResultado())) {
             for (ConfirmarCompraDTO.DetalleAsientoCompra detalle : compraDTO.getDetalles()) {
                 AsientoVendido asiento = new AsientoVendido();
                 asiento.setFila(detalle.getFila());
@@ -137,15 +209,14 @@ public class VentaServiceImpl implements VentaService {
                 asientoVendidoRepository.save(asiento);
             }
 
-            // 7. Limpiar la sesión solo si fue exitoso
             sesionService.borrarSesion(login);
             LOG.info("Compra realizada con éxito. Venta ID local: {}", ventaLocal.getId());
         } else {
-            LOG.warn("La venta fue rechazada por la Cátedra: {}", respuestaCatedra.getDescripcion());
+            LOG.warn("La venta fue rechazada por la Cátedra: {}", response.getDescripcion());
         }
-
-        return ventaMapper.toDto(ventaLocal);
     }
+
+    // -------------
 
     @Override
     public VentaDTO save(VentaDTO ventaDTO) {

@@ -22,6 +22,15 @@ public class ApplicationProperties {
         private String ventaUrl;
         private String proxyUrl;
         private String eventosUrl;
+        private String bloqueoUrl;
+
+        public String getBloqueoUrl() {
+            return bloqueoUrl;
+        }
+
+        public void setBloqueoUrl(String bloqueoUrl) {
+            this.bloqueoUrl = bloqueoUrl;
+        }
 
         public String getVentaUrl() {
             return ventaUrl;
