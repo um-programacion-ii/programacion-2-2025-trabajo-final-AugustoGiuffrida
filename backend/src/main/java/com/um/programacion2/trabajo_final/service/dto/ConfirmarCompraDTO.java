@@ -7,36 +7,11 @@ public class ConfirmarCompraDTO {
     // O simplificamos: enviamos un objeto {fila, columna, nombre} para asegurar correspondencia.
     private List<DetalleAsientoCompra> detalles;
 
-    public List<DetalleAsientoCompra> getDetalles() { return detalles; }
-    public void setDetalles(List<DetalleAsientoCompra> detalles) { this.detalles = detalles; }
+    public List<DetalleAsientoCompra> getDetalles() {
+        return detalles;
+    }
 
-    public static class DetalleAsientoCompra {
-        private int fila;
-        private int columna;
-        private String nombrePersona;
-
-        public int getColumna() {
-            return columna;
-        }
-
-        public void setColumna(int columna) {
-            this.columna = columna;
-        }
-
-        public String getNombrePersona() {
-            return nombrePersona;
-        }
-
-        public void setNombrePersona(String nombrePersona) {
-            this.nombrePersona = nombrePersona;
-        }
-
-        public int getFila() {
-            return fila;
-        }
-
-        public void setFila(int fila) {
-            this.fila = fila;
-        }
+    public void setDetalles(List<DetalleAsientoCompra> detalles) {
+        this.detalles = detalles;
     }
 }

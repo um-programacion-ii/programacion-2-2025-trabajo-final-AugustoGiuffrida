@@ -151,7 +151,7 @@ public class VentaServiceImpl implements VentaService {
         request.setPrecioVenta(evento.getPrecioEntrada());
 
         List<AsientoVentaCatedraDTO> asientosCatedra = new ArrayList<>();
-        for (ConfirmarCompraDTO.DetalleAsientoCompra detalle : compraDTO.getDetalles()) {
+        for (DetalleAsientoCompra detalle : compraDTO.getDetalles()) {
             asientosCatedra.add(new AsientoVentaCatedraDTO(
                 detalle.getFila(),
                 detalle.getColumna(),
@@ -200,7 +200,7 @@ public class VentaServiceImpl implements VentaService {
 
     private void procesarResultadoVenta(String login, Venta ventaLocal ,VentaCatedraResponse response, ConfirmarCompraDTO compraDTO){
         if (Boolean.TRUE.equals(response.getResultado())) {
-            for (ConfirmarCompraDTO.DetalleAsientoCompra detalle : compraDTO.getDetalles()) {
+            for (DetalleAsientoCompra detalle : compraDTO.getDetalles()) {
                 AsientoVendido asiento = new AsientoVendido();
                 asiento.setFila(detalle.getFila());
                 asiento.setColumna(detalle.getColumna());
