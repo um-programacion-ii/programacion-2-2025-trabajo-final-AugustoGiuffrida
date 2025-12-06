@@ -114,7 +114,8 @@ jhipster:
 application:
   catedra:
     token: "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhLmdpdWZmcmlkYSIsImV4cCI6MTc2NTg2MzA3OSwiYXV0aCI6IlJPTEVfVVNFUiIsImlhdCI6MTc2MzI3MTA3OX0.RVZCcmZJ9SPDPot8TluqyuBvxU1hlLdMl0appRUX7grmL5HFlucyGgM-_bb31cDZOZ_JxmKPp9RXZ4axCC_JzQ"
-    eventos-url: "http://192.168.194.250:8080/api/endpoints/v1/eventos"
-    venta-url: "http://192.168.194.250:8080/api/endpoints/v1/realizar-venta"
     proxy-url: "http://localhost:8081/api"
-    bloqueo-url: "http://192.168.194.250:8080/api/endpoints/v1/bloquear-asientos"
+    venta-url: "http://localhost:8081/api/gateway/realizar-venta"
+    bloqueo-url: "http://localhost:8081/api/gateway/bloquear-asientos"
+    eventos-url: "http://192.168.194.250:8080/api/endpoints/v1/eventos"
+    forzar-update-url: "http://192.168.194.250:8080/api/endpoints/v1/forzar-actualizacion"

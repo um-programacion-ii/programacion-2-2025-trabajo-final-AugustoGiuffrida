@@ -5,15 +5,14 @@ spring:
   application:
     name: proxy
 
-  # Configuración para el REDIS de la CÁTEDRA
+  # Configuración para REDIS
   data:
     redis:
       host: 192.168.194.250
       port: 6379
-      # Si se requiere contraseña, se añade aquí:
       # password: "example_password"
 
-  # Configuración para el KAFKA de la CÁTEDRA
+  # Configuración para KAFKA
   kafka:
     bootstrap-servers: 192.168.194.250:9092
     consumer:
@@ -21,3 +20,9 @@ spring:
       auto-offset-reset: earliest
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+
+application:
+  backend-url: "http://localhost:8080"
+  catedra-api-url: "http://192.168.194.250:8080"
+  bloquear-asientos-url: "/api/endpoints/v1/bloquear-asientos"
+  realizar-venta-url: "/api/endpoints/v1/realizar-venta"

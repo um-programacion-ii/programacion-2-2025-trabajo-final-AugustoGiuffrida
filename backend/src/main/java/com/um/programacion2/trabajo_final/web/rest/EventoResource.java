@@ -42,6 +42,34 @@ public class EventoResource {
         this.eventoRepository = eventoRepository;
     }
 
+
+    /**
+     * {@code POST /eventos/notificacion-cambio} : Endpoint llamado por el Proxy cuando hay novedades en Kafka.
+     */
+    @PostMapping("/notificacion-cambio")
+    public ResponseEntity<Void> recibirNotificacionCambio(@RequestBody(required = false) String mensajeKafka) {
+        LOG.info("Solicitud de actualización recibida desde el Proxy. Mensaje original: {}", mensajeKafka);
+
+        eventoService.sincronizarEventosCatedra();
+
+        return ResponseEntity.ok().build();
+    }
+
+    /**
+     * {@code POST  /eventos/sincronizar} : Sincroniza los eventos desde la Cátedra.
+     *
+     * @return una respuesta OK (200).
+     */
+    @PostMapping("/sincronizar")
+    public ResponseEntity<Void> sincronizarEventos() {
+        LOG.info("REST request para sincronizar eventos desde Cátedra");
+
+        // Llama al servicio que creamos
+        eventoService.sincronizarEventosCatedra();
+
+        return ResponseEntity.ok().build();
+    }
+
     /**
      * {@code POST  /eventos} : Create a new evento.
      *
@@ -167,20 +195,5 @@ public class EventoResource {
         return ResponseEntity.noContent()
             .headers(HeaderUtil.createEntityDeletionAlert(applicationName, true, ENTITY_NAME, id.toString()))
             .build();
-    }
-
-    /**
-     * {@code POST  /eventos/sincronizar} : Sincroniza los eventos desde la Cátedra.
-     *
-     * @return una respuesta OK (200).
-     */
-    @PostMapping("/sincronizar")
-    public ResponseEntity<Void> sincronizarEventos() {
-        LOG.info("REST request para sincronizar eventos desde Cátedra");
-
-        // Llama al servicio que creamos
-        eventoService.sincronizarEventosCatedra();
-
-        return ResponseEntity.ok().build();
     }
 }

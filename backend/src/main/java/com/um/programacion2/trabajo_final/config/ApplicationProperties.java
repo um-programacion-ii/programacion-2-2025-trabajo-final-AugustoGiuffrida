@@ -23,6 +23,16 @@ public class ApplicationProperties {
         private String proxyUrl;
         private String eventosUrl;
         private String bloqueoUrl;
+        private String forzarUpdateUrl;
+
+
+        public String getForzarUpdateUrl() {
+            return forzarUpdateUrl;
+        }
+
+        public void setForzarUpdateUrl(String forzarUpdateUrl) {
+            this.forzarUpdateUrl = forzarUpdateUrl;
+        }
 
         public String getBloqueoUrl() {
             return bloqueoUrl;
