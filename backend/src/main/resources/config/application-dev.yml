@@ -119,3 +119,4 @@ application:
     bloqueo-url: "http://localhost:8081/api/gateway/bloquear-asientos"
     eventos-url: "http://192.168.194.250:8080/api/endpoints/v1/eventos"
     forzar-update-url: "http://192.168.194.250:8080/api/endpoints/v1/forzar-actualizacion"
+    listar-ventas-url: "http://192.168.194.250:8080/api/endpoints/v1/listar-ventas"

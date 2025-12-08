@@ -24,7 +24,15 @@ public class ApplicationProperties {
         private String eventosUrl;
         private String bloqueoUrl;
         private String forzarUpdateUrl;
+        private String listarVentasUrl;
 
+        public String getListarVentasUrl() {
+            return listarVentasUrl;
+        }
+
+        public void setListarVentasUrl(String listarVentasUrl) {
+            this.listarVentasUrl = listarVentasUrl;
+        }
 
         public String getForzarUpdateUrl() {
             return forzarUpdateUrl;

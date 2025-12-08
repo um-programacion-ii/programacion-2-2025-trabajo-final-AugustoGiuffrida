@@ -125,7 +125,6 @@ public class VentaServiceImpl implements VentaService {
 
         Venta ventaLocal = crearVentaPendiente(login, evento, compraDTO);
 
-        ventaLocal = ventaRepository.saveAndFlush(ventaLocal);
         LOG.info("Venta iniciada localmente con estado PENDIENTE. ID: {}", ventaLocal.getId());
 
         VentaCatedraRequest requestCatedra = construirRequest(sesion, evento, compraDTO);
@@ -135,7 +134,7 @@ public class VentaServiceImpl implements VentaService {
             VentaCatedraResponse respuestaCatedra = llamarApi(requestCatedra);
 
             // 4. Actualizar según respuesta
-            actualizarVentaConRespuesta(ventaLocal, respuestaCatedra, compraDTO);
+            actualizarVentaConRespuesta(ventaLocal, respuestaCatedra);
 
         } catch (Exception e) {
             LOG.error("Error crítico de comunicación durante la venta {}: {}", ventaLocal.getId(), e.getMessage());
@@ -174,11 +173,25 @@ public class VentaServiceImpl implements VentaService {
         venta.setPrecioVenta(evento.getPrecioEntrada());
         venta.setEstadoVenta(EstadoVenta.PENDIENTE);
         venta.setDescripcion("Procesando compra...");
+
+        venta.setResultado(false);
+
+        venta = ventaRepository.saveAndFlush(venta);
+
+        for (DetalleAsientoCompra detalle : compraDTO.getDetalles()) {
+            AsientoVendido asiento = new AsientoVendido();
+            asiento.setFila(detalle.getFila());
+            asiento.setColumna(detalle.getColumna());
+            asiento.setPersona(detalle.getNombrePersona());
+            asiento.setVenta(venta);
+            asientoVendidoRepository.save(asiento);
+        }
+
         venta.setResultado(false);
         return venta;
     }
 
-    private void actualizarVentaConRespuesta(Venta ventaLocal, VentaCatedraResponse response, ConfirmarCompraDTO compraDTO) {
+    private void actualizarVentaConRespuesta(Venta ventaLocal, VentaCatedraResponse response) {
         ventaLocal.setFechaVenta(response.getFechaVenta());
         ventaLocal.setPrecioVenta(response.getPrecioVenta());
         ventaLocal.setResultado(response.getResultado());
@@ -187,16 +200,6 @@ public class VentaServiceImpl implements VentaService {
         if (Boolean.TRUE.equals(response.getResultado())) {
             ventaLocal.setVentaIdCatedra(response.getVentaId());
             ventaLocal.setEstadoVenta(EstadoVenta.CONFIRMADA);
-
-            // Guardar el detalle de los asientos vendidos
-            for (DetalleAsientoCompra detalle : compraDTO.getDetalles()) {
-                AsientoVendido asiento = new AsientoVendido();
-                asiento.setFila(detalle.getFila());
-                asiento.setColumna(detalle.getColumna());
-                asiento.setPersona(detalle.getNombrePersona());
-                asiento.setVenta(ventaLocal);
-                asientoVendidoRepository.save(asiento);
-            }
             LOG.info("Venta {} CONFIRMADA por Cátedra. ID externo: {}", ventaLocal.getId(), response.getVentaId());
         } else {
             ventaLocal.setEstadoVenta(EstadoVenta.RECHAZADA);
@@ -223,7 +226,11 @@ public class VentaServiceImpl implements VentaService {
 
     private VentaCatedraRequest construirRequest(SesionVentaDTO sesion, Evento evento, ConfirmarCompraDTO compraDTO){
         VentaCatedraRequest request = new VentaCatedraRequest();
-        request.setEventoId(sesion.getEventoId());
+        if (evento.getEventoIdCatedra() == null) {
+            throw new RuntimeException("Error: El evento no está sincronizado con la Cátedra (ID Cátedra es nulo).");
+        }
+        request.setEventoId(evento.getEventoIdCatedra());
+        request.setEventoId(evento.getEventoIdCatedra());
         request.setFecha(java.time.Instant.now());
         request.setPrecioVenta(evento.getPrecioEntrada());
 
