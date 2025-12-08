@@ -3,6 +3,8 @@ package com.um.programacion2.trabajo_final.repository;
 import com.um.programacion2.trabajo_final.domain.Venta;
 import java.util.List;
 import java.util.Optional;
+
+import com.um.programacion2.trabajo_final.enumeration.EstadoVenta;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.*;
@@ -16,6 +18,9 @@ import org.springframework.stereotype.Repository;
 public interface VentaRepository extends JpaRepository<Venta, Long> {
     @Query("select venta from Venta venta where venta.user.login = ?#{authentication.name}")
     List<Venta> findByUserIsCurrentUser();
+
+    List<Venta> findAllByEstadoVenta(EstadoVenta estadoVenta);
+
 
     default Optional<Venta> findOneWithEagerRelationships(Long id) {
         return this.findOneWithToOneRelationships(id);

@@ -38,6 +38,9 @@ public class EventoServiceImpl implements EventoService {
     @Value("${application.catedra.eventos-url}")
     private String catedraEventosUrl;
 
+    @Value("${application.catedra.forzar-update-url}")
+    private String catedraForzarUpdateUrl;
+
     public EventoServiceImpl(EventoRepository eventoRepository, EventoMapper eventoMapper) {
         this.eventoRepository = eventoRepository;
         this.eventoMapper = eventoMapper;
@@ -48,6 +51,11 @@ public class EventoServiceImpl implements EventoService {
         LOG.info("Iniciando sincronización de eventos desde Cátedra: {}", catedraEventosUrl);
 
         try {
+
+            //LOG.debug("Forzando actualización de eventos en Cátedra: {}", catedraForzarUpdateUrl);
+            //restTemplate.getForObject(catedraForzarUpdateUrl, String.class);
+
+            LOG.info("Obteniendo eventos desde Cátedra: {}", catedraEventosUrl);
             EventoCatedraDTO[] eventosArray = restTemplate.getForObject(catedraEventosUrl, EventoCatedraDTO[].class);
 
             if (eventosArray == null || eventosArray.length == 0) {

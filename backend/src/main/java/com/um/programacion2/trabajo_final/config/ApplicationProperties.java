@@ -23,6 +23,24 @@ public class ApplicationProperties {
         private String proxyUrl;
         private String eventosUrl;
         private String bloqueoUrl;
+        private String forzarUpdateUrl;
+        private String listarVentasUrl;
+
+        public String getListarVentasUrl() {
+            return listarVentasUrl;
+        }
+
+        public void setListarVentasUrl(String listarVentasUrl) {
+            this.listarVentasUrl = listarVentasUrl;
+        }
+
+        public String getForzarUpdateUrl() {
+            return forzarUpdateUrl;
+        }
+
+        public void setForzarUpdateUrl(String forzarUpdateUrl) {
+            this.forzarUpdateUrl = forzarUpdateUrl;
+        }
 
         public String getBloqueoUrl() {
             return bloqueoUrl;

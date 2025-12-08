@@ -91,9 +91,8 @@ jhipster:
       jwt:
         # This token must be encoded using Base64 and be at least 256 bits long (you can type `openssl rand -base64 64` on your command line to generate a 512 bits one)
         base64-secret: MWUxMDg5MGY1YWZiZDJmMjU3NTEzZDkyNjMzNjllM2FiNDhlYzg2ZGYyODMwZmZjMGYzOWI5NzI3MGE2Nzc2Y2FmNGQ1NjJkMzJiMjQ2ZjQ4MjZkYjRlZTFmZjRiOTY1OTVhNmFiMzQ2ZjdjYjMwYWI3MDkyNzkyOTA3NDU2YzA=
-        # Token is valid 24 hours
-        token-validity-in-seconds: 86400
-        token-validity-in-seconds-for-remember-me: 2592000
+        token-validity-in-seconds: 1800
+        token-validity-in-seconds-for-remember-me: 1800
   mail: # specific JHipster mail property, for standard properties see MailProperties
     base-url: http://127.0.0.1:8080
   logging:
@@ -115,7 +114,9 @@ jhipster:
 application:
   catedra:
     token: "eyJhbGciOiJIUzUxMiJ9.eyJzdWIiOiJhLmdpdWZmcmlkYSIsImV4cCI6MTc2NTg2MzA3OSwiYXV0aCI6IlJPTEVfVVNFUiIsImlhdCI6MTc2MzI3MTA3OX0.RVZCcmZJ9SPDPot8TluqyuBvxU1hlLdMl0appRUX7grmL5HFlucyGgM-_bb31cDZOZ_JxmKPp9RXZ4axCC_JzQ"
-    eventos-url: "http://192.168.194.250:8080/api/endpoints/v1/eventos"
-    venta-url: "http://192.168.194.250:8080/api/endpoints/v1/realizar-venta"
     proxy-url: "http://localhost:8081/api"
-    bloqueo-url: "http://192.168.194.250:8080/api/endpoints/v1/bloquear-asientos"
+    venta-url: "http://localhost:8081/api/gateway/realizar-venta"
+    bloqueo-url: "http://localhost:8081/api/gateway/bloquear-asientos"
+    eventos-url: "http://192.168.194.250:8080/api/endpoints/v1/eventos"
+    forzar-update-url: "http://192.168.194.250:8080/api/endpoints/v1/forzar-actualizacion"
+    listar-ventas-url: "http://192.168.194.250:8080/api/endpoints/v1/listar-ventas"

@@ -75,7 +75,6 @@ public class VentaServiceImpl implements VentaService {
     public void bloquearAsientos(String login, SolicitudBloqueoDTO solicitudDTO) {
         LOG.debug("Solicitando bloqueo de asientos para usuario: {}", login);
 
-        // 1. Construir Request para Cátedra
         BloqueoRequest request = new BloqueoRequest();
         request.setEventoId(solicitudDTO.getEventoId());
 
@@ -85,7 +84,6 @@ public class VentaServiceImpl implements VentaService {
         }
         request.setAsientos(asientosCatedra);
 
-        // 2. Llamar a Cátedra
         BloqueoResponse response;
         try {
             response = restTemplate.postForObject(catedraBloqueoUrl, request, BloqueoResponse.class);
@@ -97,18 +95,15 @@ public class VentaServiceImpl implements VentaService {
             throw new RuntimeException("No se pudieron bloquear los asientos: " + (response != null ? response.getDescripcion() : "Error desconocido"));
         }
 
-        // 3. Si el bloqueo fue exitoso, ACTUALIZAR LA SESIÓN EN REDIS
         actualizarSesionConBloqueo(login, solicitudDTO);
     }
 
     private void actualizarSesionConBloqueo(String login, SolicitudBloqueoDTO solicitud) {
-        // Recuperamos o creamos la sesión
         SesionVentaDTO sesion = new SesionVentaDTO();
         sesion.setEventoId(solicitud.getEventoId());
         sesion.setAsientosSeleccionados(solicitud.getAsientos());
         sesion.setEstadoActual(EstadoSesion.CONFIRMANDO);
 
-        // Guardamos en Redis usando el servicio de sesión que ya tenemos
         sesionService.guardarSesion(login, sesion);
         LOG.info("Sesión actualizada en Redis con asientos bloqueados para: {}", login);
     }
@@ -121,13 +116,28 @@ public class VentaServiceImpl implements VentaService {
 
         Evento evento = recuperarEvento(sesion.getEventoId());
 
-        VentaCatedraRequest requestCatedra = construirRequest(sesion,evento,compraDTO);
+        validarAsientosCompra(sesion, compraDTO);
 
-        VentaCatedraResponse respuestaCatedra = llamarApi(requestCatedra);
+        Venta ventaLocal = crearVentaPendiente(login, evento, compraDTO);
+        LOG.info("Venta iniciada localmente con estado PENDIENTE. ID: {}", ventaLocal.getId());
 
-        Venta ventaLocal = guardarVenta(login,respuestaCatedra,evento);
+        VentaCatedraRequest requestCatedra = construirRequest(sesion, evento, compraDTO);
 
-        procesarResultadoVenta(login,ventaLocal,respuestaCatedra,compraDTO);
+        try {
+            VentaCatedraResponse respuestaCatedra = enviarSolicitud(requestCatedra);
+
+            actualizarVentaConRespuesta(ventaLocal, respuestaCatedra);
+
+        } catch (Exception e) {
+            LOG.error("Error crítico de comunicación durante la venta {}: {}", ventaLocal.getId(), e.getMessage());
+            ventaLocal.setDescripcion("Error de comunicación: " + e.getMessage());
+        }
+
+        ventaLocal = ventaRepository.save(ventaLocal);
+
+        if (EstadoVenta.CONFIRMADA.equals(ventaLocal.getEstadoVenta())) {
+            sesionService.borrarSesion(login);
+        }
 
         return ventaMapper.toDto(ventaLocal);
     }
@@ -144,14 +154,77 @@ public class VentaServiceImpl implements VentaService {
             .orElseThrow(() -> new RuntimeException("Evento no encontrado localmente. Sincronice los eventos primero."));
     }
 
+    private Venta crearVentaPendiente(String login, Evento evento, ConfirmarCompraDTO compraDTO) {
+        User user = userRepository.findOneByLogin(login).orElseThrow();
+        Venta venta = new Venta();
+        venta.setUser(user);
+        venta.setEvento(evento);
+        venta.setFechaVenta(Instant.now());
+        venta.setPrecioVenta(evento.getPrecioEntrada());
+        venta.setEstadoVenta(EstadoVenta.PENDIENTE);
+        venta.setDescripcion("Procesando compra...");
+
+        venta.setResultado(false);
+
+        venta = ventaRepository.saveAndFlush(venta);
+
+        for (DetalleAsientoCompra detalle : compraDTO.getDetalles()) {
+            AsientoVendido asiento = new AsientoVendido();
+            asiento.setFila(detalle.getFila());
+            asiento.setColumna(detalle.getColumna());
+            asiento.setPersona(detalle.getNombrePersona());
+            asiento.setVenta(venta);
+            asientoVendidoRepository.save(asiento);
+        }
+
+        venta.setResultado(false);
+        return venta;
+    }
+
+    private void actualizarVentaConRespuesta(Venta ventaLocal, VentaCatedraResponse response) {
+        ventaLocal.setFechaVenta(response.getFechaVenta());
+        ventaLocal.setPrecioVenta(response.getPrecioVenta());
+        ventaLocal.setResultado(response.getResultado());
+        ventaLocal.setDescripcion(response.getDescripcion());
+
+        if (Boolean.TRUE.equals(response.getResultado())) {
+            ventaLocal.setVentaIdCatedra(response.getVentaId());
+            ventaLocal.setEstadoVenta(EstadoVenta.CONFIRMADA);
+            LOG.info("Venta {} CONFIRMADA por Cátedra. ID externo: {}", ventaLocal.getId(), response.getVentaId());
+        } else {
+            ventaLocal.setEstadoVenta(EstadoVenta.RECHAZADA);
+            LOG.warn("Venta {} RECHAZADA por Cátedra: {}", ventaLocal.getId(), response.getDescripcion());
+        }
+    }
+
+    private void validarAsientosCompra(SesionVentaDTO sesion, ConfirmarCompraDTO compraDTO) {
+        List<AsientoSesionDTO> bloqueados = sesion.getAsientosSeleccionados();
+
+        for (DetalleAsientoCompra detalle : compraDTO.getDetalles()) {
+            boolean asientoEstaBloqueado = bloqueados.stream().anyMatch(asiento ->
+                asiento.getFila() == detalle.getFila() &&
+                    asiento.getColumna() == detalle.getColumna()
+            );
+
+            if (!asientoEstaBloqueado) {
+                throw new RuntimeException("Error: Intentando comprar el asiento (F:" +
+                    detalle.getFila() + ", C:" + detalle.getColumna() +
+                    ") que no se encuentra bloqueado en la sesión actual.");
+            }
+        }
+    }
+
     private VentaCatedraRequest construirRequest(SesionVentaDTO sesion, Evento evento, ConfirmarCompraDTO compraDTO){
         VentaCatedraRequest request = new VentaCatedraRequest();
-        request.setEventoId(sesion.getEventoId());
+        if (evento.getEventoIdCatedra() == null) {
+            throw new RuntimeException("Error: El evento no está sincronizado con la Cátedra (ID Cátedra es nulo).");
+        }
+        request.setEventoId(evento.getEventoIdCatedra());
         request.setFecha(java.time.Instant.now());
         request.setPrecioVenta(evento.getPrecioEntrada());
 
         List<AsientoVentaCatedraDTO> asientosCatedra = new ArrayList<>();
-        for (ConfirmarCompraDTO.DetalleAsientoCompra detalle : compraDTO.getDetalles()) {
+        for (DetalleAsientoCompra detalle : compraDTO.getDetalles()) {
             asientosCatedra.add(new AsientoVentaCatedraDTO(
                 detalle.getFila(),
                 detalle.getColumna(),
@@ -162,7 +235,7 @@ public class VentaServiceImpl implements VentaService {
         return request;
     }
 
-    private VentaCatedraResponse llamarApi(VentaCatedraRequest requestCatedra){
+    private VentaCatedraResponse enviarSolicitud(VentaCatedraRequest requestCatedra){
         try {
             LOG.info("Enviando solicitud de venta a Cátedra: {}", requestCatedra);
             VentaCatedraResponse response = restTemplate.postForObject(catedraVentaUrl, requestCatedra, VentaCatedraResponse.class);
@@ -173,46 +246,6 @@ public class VentaServiceImpl implements VentaService {
         } catch (Exception e) {
             LOG.error("Error al llamar a Cátedra. Request enviado: precio={}, fecha={}", requestCatedra.getPrecioVenta(), requestCatedra.getFecha());
             throw new RuntimeException("Error al comunicarse con el servicio de ventas de la Cátedra: " + e.getMessage());
-        }
-    }
-
-    private Venta guardarVenta(String login, VentaCatedraResponse response, Evento evento){
-        User user = userRepository.findOneByLogin(login).orElseThrow();
-
-        Venta ventaLocal = new Venta();
-        ventaLocal.setUser(user);
-        ventaLocal.setEvento(evento);
-        ventaLocal.setFechaVenta(response.getFechaVenta());
-        ventaLocal.setPrecioVenta(response.getPrecioVenta());
-        ventaLocal.setResultado(response.getResultado());
-        ventaLocal.setDescripcion(response.getDescripcion());
-
-        if (Boolean.TRUE.equals(response.getResultado())) {
-            ventaLocal.setVentaIdCatedra(response.getVentaId());
-            ventaLocal.setEstadoVenta(EstadoVenta.CONFIRMADA);
-        } else {
-            ventaLocal.setEstadoVenta(EstadoVenta.RECHAZADA);
-        }
-
-        ventaLocal = ventaRepository.save(ventaLocal);
-        return ventaLocal;
-    }
-
-    private void procesarResultadoVenta(String login, Venta ventaLocal ,VentaCatedraResponse response, ConfirmarCompraDTO compraDTO){
-        if (Boolean.TRUE.equals(response.getResultado())) {
-            for (ConfirmarCompraDTO.DetalleAsientoCompra detalle : compraDTO.getDetalles()) {
-                AsientoVendido asiento = new AsientoVendido();
-                asiento.setFila(detalle.getFila());
-                asiento.setColumna(detalle.getColumna());
-                asiento.setPersona(detalle.getNombrePersona());
-                asiento.setVenta(ventaLocal);
-                asientoVendidoRepository.save(asiento);
-            }
-
-            sesionService.borrarSesion(login);
-            LOG.info("Compra realizada con éxito. Venta ID local: {}", ventaLocal.getId());
-        } else {
-            LOG.warn("La venta fue rechazada por la Cátedra: {}", response.getDescripcion());
         }
     }
 

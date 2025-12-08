@@ -6,6 +6,7 @@ import com.um.programacion2.trabajo_final.service.VentaService;
 import com.um.programacion2.trabajo_final.service.dto.ConfirmarCompraDTO;
 import com.um.programacion2.trabajo_final.service.dto.SolicitudBloqueoDTO;
 import com.um.programacion2.trabajo_final.service.dto.VentaDTO;
+import com.um.programacion2.trabajo_final.service.impl.VentaRetryServiceImpl;
 import com.um.programacion2.trabajo_final.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -37,12 +38,20 @@ public class VentaResource {
     private String applicationName;
 
     private final VentaService ventaService;
-
+    private final VentaRetryServiceImpl ventaRetryServiceImpl;
     private final VentaRepository ventaRepository;
 
-    public VentaResource(VentaService ventaService, VentaRepository ventaRepository) {
+    public VentaResource(VentaService ventaService, VentaRepository ventaRepository, VentaRetryServiceImpl ventaRetryServiceImpl) {
         this.ventaService = ventaService;
         this.ventaRepository = ventaRepository;
+        this.ventaRetryServiceImpl = ventaRetryServiceImpl;
+    }
+
+    @PostMapping("/reintentar/{id}")
+    public ResponseEntity<VentaDTO> reintentarVenta(@PathVariable Long id) {
+        VentaDTO resultado = ventaRetryServiceImpl.reconciliarVentaManual(id);
+
+        return ResponseEntity.ok(resultado);
     }
 
     @PostMapping("/bloquear")
