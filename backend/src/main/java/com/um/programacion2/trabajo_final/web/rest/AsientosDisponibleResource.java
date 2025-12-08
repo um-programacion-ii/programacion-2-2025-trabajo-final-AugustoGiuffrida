@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.util.Optional;
 
 @RestController
-@RequestMapping("/api/asientos-disponibilidad")
+@RequestMapping("/api/asientos-ocupados")
 public class AsientosDisponibleResource {
 
     private final Logger log = LoggerFactory.getLogger(AsientosDisponibleResource.class);
@@ -25,7 +25,7 @@ public class AsientosDisponibleResource {
     }
 
     /**
-     * GET /api/asientos-disponibilidad/eventos/{id}: Obtener asientos ocupados de un evento.
+     * GET /api/asientos-ocupados/eventos/{id}: Obtener asientos ocupados de un evento.
      */
     @GetMapping("/eventos/{id}")
     public ResponseEntity<EventoRedisDTO> getAsientosOcupados(@PathVariable Long id) {

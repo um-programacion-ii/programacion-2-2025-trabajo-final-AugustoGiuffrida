@@ -75,7 +75,6 @@ public class VentaServiceImpl implements VentaService {
     public void bloquearAsientos(String login, SolicitudBloqueoDTO solicitudDTO) {
         LOG.debug("Solicitando bloqueo de asientos para usuario: {}", login);
 
-        // 1. Construir Request para Cátedra
         BloqueoRequest request = new BloqueoRequest();
         request.setEventoId(solicitudDTO.getEventoId());
 
@@ -85,7 +84,6 @@ public class VentaServiceImpl implements VentaService {
         }
         request.setAsientos(asientosCatedra);
 
-        // 2. Llamar a Cátedra
         BloqueoResponse response;
         try {
             response = restTemplate.postForObject(catedraBloqueoUrl, request, BloqueoResponse.class);
@@ -97,18 +95,15 @@ public class VentaServiceImpl implements VentaService {
             throw new RuntimeException("No se pudieron bloquear los asientos: " + (response != null ? response.getDescripcion() : "Error desconocido"));
         }
 
-        // 3. Si el bloqueo fue exitoso, ACTUALIZAR LA SESIÓN EN REDIS
         actualizarSesionConBloqueo(login, solicitudDTO);
     }
 
     private void actualizarSesionConBloqueo(String login, SolicitudBloqueoDTO solicitud) {
-        // Recuperamos o creamos la sesión
         SesionVentaDTO sesion = new SesionVentaDTO();
         sesion.setEventoId(solicitud.getEventoId());
         sesion.setAsientosSeleccionados(solicitud.getAsientos());
         sesion.setEstadoActual(EstadoSesion.CONFIRMANDO);
 
-        // Guardamos en Redis usando el servicio de sesión que ya tenemos
         sesionService.guardarSesion(login, sesion);
         LOG.info("Sesión actualizada en Redis con asientos bloqueados para: {}", login);
     }
@@ -124,16 +119,13 @@ public class VentaServiceImpl implements VentaService {
         validarAsientosCompra(sesion, compraDTO);
 
         Venta ventaLocal = crearVentaPendiente(login, evento, compraDTO);
-
         LOG.info("Venta iniciada localmente con estado PENDIENTE. ID: {}", ventaLocal.getId());
 
         VentaCatedraRequest requestCatedra = construirRequest(sesion, evento, compraDTO);
 
         try {
-            // 3. Llamar a Cátedra
-            VentaCatedraResponse respuestaCatedra = llamarApi(requestCatedra);
+            VentaCatedraResponse respuestaCatedra = enviarSolicitud(requestCatedra);
 
-            // 4. Actualizar según respuesta
             actualizarVentaConRespuesta(ventaLocal, respuestaCatedra);
 
         } catch (Exception e) {
@@ -141,10 +133,8 @@ public class VentaServiceImpl implements VentaService {
             ventaLocal.setDescripcion("Error de comunicación: " + e.getMessage());
         }
 
-        // 5. Guardar estado final (Confirmada, Rechazada o Pendiente con error)
         ventaLocal = ventaRepository.save(ventaLocal);
 
-        // Si fue exitosa, limpiamos sesión
         if (EstadoVenta.CONFIRMADA.equals(ventaLocal.getEstadoVenta())) {
             sesionService.borrarSesion(login);
         }
@@ -230,7 +220,6 @@ public class VentaServiceImpl implements VentaService {
             throw new RuntimeException("Error: El evento no está sincronizado con la Cátedra (ID Cátedra es nulo).");
         }
         request.setEventoId(evento.getEventoIdCatedra());
-        request.setEventoId(evento.getEventoIdCatedra());
         request.setFecha(java.time.Instant.now());
         request.setPrecioVenta(evento.getPrecioEntrada());
 
@@ -246,7 +235,7 @@ public class VentaServiceImpl implements VentaService {
         return request;
     }
 
-    private VentaCatedraResponse llamarApi(VentaCatedraRequest requestCatedra){
+    private VentaCatedraResponse enviarSolicitud(VentaCatedraRequest requestCatedra){
         try {
             LOG.info("Enviando solicitud de venta a Cátedra: {}", requestCatedra);
             VentaCatedraResponse response = restTemplate.postForObject(catedraVentaUrl, requestCatedra, VentaCatedraResponse.class);

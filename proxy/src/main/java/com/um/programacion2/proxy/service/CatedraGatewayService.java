@@ -33,7 +33,6 @@ public class CatedraGatewayService {
             log.info("Reenviando petición a Cátedra: {}", urlDestino);
 
             try {
-                // 1. Crear nuevos headers
                 HttpHeaders newHeaders = new HttpHeaders();
 
                 // 2. Solo copia el Content-Type y la Autorización
@@ -48,7 +47,6 @@ public class CatedraGatewayService {
                     newHeaders.set(HttpHeaders.AUTHORIZATION, headers.getFirst(HttpHeaders.AUTHORIZATION));
                 }
 
-                // 3. Crear la entidad con los headers limpios
                 HttpEntity<Object> requestEntity = new HttpEntity<>(body, newHeaders);
 
                 return restTemplate.exchange(

@@ -22,7 +22,6 @@ import tech.jhipster.config.JHipsterConstants;
 
 @SpringBootApplication
 @EnableConfigurationProperties({ LiquibaseProperties.class, ApplicationProperties.class })
-@EnableScheduling
 public class BackendApp {
 
     private static final Logger LOG = LoggerFactory.getLogger(BackendApp.class);

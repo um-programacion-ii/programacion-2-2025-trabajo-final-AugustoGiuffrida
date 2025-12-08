@@ -22,25 +22,26 @@ import java.util.List;
 
 @Service
 @Transactional
-public class VentaRetryService {
+public class VentaRetryServiceImpl {
 
-    private final Logger log = LoggerFactory.getLogger(VentaRetryService.class);
+    private final Logger log = LoggerFactory.getLogger(VentaRetryServiceImpl.class);
 
-    private final VentaRepository ventaRepository;
-    private final RestTemplate restTemplate;
-    private final VentaMapper ventaMapper;
     private final String catedraVentaUrl;
+    private final VentaMapper ventaMapper;
+    private final RestTemplate restTemplate;
+    private final VentaRepository ventaRepository;
 
-    public VentaRetryService(VentaRepository ventaRepository,
-                             RestTemplate restTemplate,
-                             VentaMapper ventaMapper,
-                             ApplicationProperties applicationProperties) {
-        this.ventaRepository = ventaRepository;
-        this.restTemplate = restTemplate;
+    public VentaRetryServiceImpl(
+        VentaMapper ventaMapper,
+        RestTemplate restTemplate,
+        VentaRepository ventaRepository,
+        ApplicationProperties applicationProperties
+    ) {
         this.ventaMapper = ventaMapper;
+        this.restTemplate = restTemplate;
+        this.ventaRepository = ventaRepository;
         this.catedraVentaUrl = applicationProperties.getCatedra().getVentaUrl();
     }
-
 
     public VentaDTO reconciliarVentaManual(Long ventaId) {
         log.info("MANUAL: Solicitud de reintento para Venta ID: {}", ventaId);

@@ -18,6 +18,7 @@ spring:
     consumer:
       group-id: "AugustoGiuffrida"
       auto-offset-reset: earliest
+      enable-auto-commit: true  # Habilitar confirmacion automática
       key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
       value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
 

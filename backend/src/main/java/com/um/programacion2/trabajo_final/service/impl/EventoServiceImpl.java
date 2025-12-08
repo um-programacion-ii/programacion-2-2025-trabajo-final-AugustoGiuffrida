@@ -53,7 +53,7 @@ public class EventoServiceImpl implements EventoService {
         try {
 
             LOG.debug("Forzando actualización de eventos en Cátedra: {}", catedraForzarUpdateUrl);
-            restTemplate.getForObject(catedraForzarUpdateUrl, Void.class);
+            restTemplate.getForObject(catedraForzarUpdateUrl, String.class);
 
             LOG.info("Obteniendo eventos desde Cátedra: {}", catedraEventosUrl);
             EventoCatedraDTO[] eventosArray = restTemplate.getForObject(catedraEventosUrl, EventoCatedraDTO[].class);
