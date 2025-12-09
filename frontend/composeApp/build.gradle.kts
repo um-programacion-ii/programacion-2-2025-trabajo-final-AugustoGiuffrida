@@ -64,6 +64,7 @@ kotlin {
             implementation(libs.voyager.screenmodel)
             implementation(libs.voyager.transitions)
             implementation(libs.voyager.koin)
+            implementation(libs.voyager.tabNavigator)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

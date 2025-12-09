@@ -1,47 +1,58 @@
 package com.um.programacion2.screens
 
-import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.runtime.Composable
 import cafe.adriel.voyager.core.screen.Screen
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.material3.Text
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.foundation.layout.Spacer
-import androidx.compose.foundation.layout.height
-import androidx.compose.material3.Button
-import androidx.compose.runtime.remember
-import androidx.compose.ui.unit.dp
-import cafe.adriel.voyager.navigator.LocalNavigator
-import cafe.adriel.voyager.navigator.currentOrThrow
-import com.um.programacion2.network.AuthApiService
+import androidx.compose.material3.Icon
+import androidx.compose.material3.NavigationBarItem
+import cafe.adriel.voyager.navigator.tab.LocalTabNavigator
+import cafe.adriel.voyager.navigator.tab.Tab
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.*
+import cafe.adriel.voyager.navigator.tab.CurrentTab
+import cafe.adriel.voyager.navigator.tab.TabNavigator
+import com.um.programacion2.screens.tabs.EventosTab
+import com.um.programacion2.screens.tabs.PerfilTab
 class MainNavigationScreen : Screen {
 
     @Composable
     override fun Content() {
-        val navigator = LocalNavigator.currentOrThrow
-        val authService = remember { AuthApiService() }
-        Column(
-            modifier = Modifier.fillMaxSize(),
-            verticalArrangement = Arrangement.Center,
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-            Text("¡Login Exitoso! Estás en la Pantalla Principal")
-            Spacer(modifier = Modifier.height(24.dp))
-
-            Button(
-                onClick = {
-                    // 1. borrar el token
-                    authService.logout()
-
-                    // 2. volver al login
-                    navigator.replaceAll(LoginScreen())
+        TabNavigator(EventosTab) {
+            Scaffold(
+                bottomBar = {
+                    NavigationBar {
+                        // Agregamos los items de la barra inferior
+                        TabNavigationItem(EventosTab)
+                        TabNavigationItem(PerfilTab)
+                    }
                 }
-            ) {
-                Text("Cerrar Sesión")
+            ) { innerPadding ->
+                // Renderiza el contenido del Tab actual
+                Box(modifier = Modifier.padding(innerPadding)) {
+                    CurrentTab()
+                }
             }
         }
     }
 }
+
+    @Composable
+    private fun RowScope.TabNavigationItem(tab: Tab) {
+        val tabNavigator = LocalTabNavigator.current
+
+        NavigationBarItem(
+            selected = tabNavigator.current == tab,
+            onClick = { tabNavigator.current = tab },
+            icon = {
+                tab.options.icon?.let { icon ->
+                    Icon(painter = icon, contentDescription = tab.options.title)
+                }
+            },
+            label = {
+                Text(text = tab.options.title)
+            }
+        )
+    }
