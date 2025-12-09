@@ -35,7 +35,6 @@ import cafe.adriel.voyager.navigator.currentOrThrow
 import kotlinx.coroutines.launch
 import com.um.programacion2.network.AuthApiService
 import com.um.programacion2.network.model.LoginRequest
-import com.um.programacion2.screens.MainNavigationScreen
 
 class LoginScreen : Screen {
 
@@ -44,7 +43,6 @@ class LoginScreen : Screen {
         val navigator = LocalNavigator.currentOrThrow
         val scope = rememberCoroutineScope()
 
-        // Instanciación directa como pediste
         val authService = remember { AuthApiService() }
 
         var username by remember { mutableStateOf("") }

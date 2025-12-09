@@ -11,7 +11,6 @@ import com.um.programacion2.screens.MainNavigationScreen
 @Composable
 fun App() {
     MaterialTheme {
-        // Lógica simple para determinar pantalla inicial
         val authService = remember { AuthApiService() }
         val isLoggedIn = authService.isLoggedIn()
 
