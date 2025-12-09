@@ -9,7 +9,7 @@ import io.ktor.http.contentType
 import com.um.programacion2.network.model.JWTToken
 import com.um.programacion2.network.model.LoginRequest
 
-class AuthApiService {
+class AuthService {
 
     private val httpClient = NetworkUtils.httpClient
     private val settings = Settings()

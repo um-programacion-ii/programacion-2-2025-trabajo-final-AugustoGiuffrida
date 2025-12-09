@@ -33,7 +33,7 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import kotlinx.coroutines.launch
-import com.um.programacion2.network.AuthApiService
+import com.um.programacion2.network.AuthService
 import com.um.programacion2.network.model.LoginRequest
 
 class LoginScreen : Screen {
@@ -43,7 +43,7 @@ class LoginScreen : Screen {
         val navigator = LocalNavigator.currentOrThrow
         val scope = rememberCoroutineScope()
 
-        val authService = remember { AuthApiService() }
+        val authService = remember { AuthService() }
 
         var username by remember { mutableStateOf("") }
         var password by remember { mutableStateOf("") }
