@@ -33,7 +33,7 @@ import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import kotlinx.coroutines.launch
-import com.um.programacion2.network.AuthService
+import com.um.programacion2.network.services.AuthService
 import com.um.programacion2.network.model.LoginRequest
 
 class LoginScreen : Screen {

@@ -1,4 +1,4 @@
-package com.um.programacion2.screens
+package com.um.programacion2.screens.evento
 
 import androidx.compose.foundation.*
 import androidx.compose.foundation.gestures.detectTransformGestures
@@ -18,12 +18,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.graphicsLayer
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.model.rememberScreenModel
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
-import com.um.programacion2.network.AsientoService
+import com.um.programacion2.network.services.AsientoService
 import com.um.programacion2.network.model.AsientoDTO
 import com.um.programacion2.network.model.EventoDTO
 import com.um.programacion2.network.model.EstadoAsientoUI
@@ -131,7 +132,6 @@ data class DetalleEventoScreen(val evento: EventoDTO) : Screen {
                     modifier = Modifier.padding(8.dp)
                 )
 
-                // MAPA DE ASIENTOS CON ZOOM Y PAN
                 Box(
                     modifier = Modifier
                         .fillMaxSize()
@@ -141,7 +141,7 @@ data class DetalleEventoScreen(val evento: EventoDTO) : Screen {
                     if (state.isLoading) {
                         CircularProgressIndicator(modifier = Modifier.align(Alignment.Center))
                     } else {
-                        MapaAsientosMejorado(
+                        MapaAsientos(
                             asientos = state.asientos,
                             seleccionados = state.seleccionados,
                             onAsientoClick = { screenModel.toggleAsiento(it) },
@@ -162,7 +162,7 @@ data class DetalleEventoScreen(val evento: EventoDTO) : Screen {
 }
 
 @Composable
-fun MapaAsientosMejorado(
+fun MapaAsientos(
     asientos: List<AsientoDTO>,
     seleccionados: Set<AsientoDTO>,
     onAsientoClick: (AsientoDTO) -> Unit,
@@ -208,7 +208,6 @@ fun MapaAsientosMejorado(
                 .padding(16.dp),
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            // Escenario visual mejorado
             Box(
                 modifier = Modifier
                     .fillMaxWidth(0.8f)
@@ -257,7 +256,7 @@ fun MapaAsientosMejorado(
                         val esSeleccionado = seleccionados.contains(asiento)
                         val esOcupado = asiento.estado == EstadoAsientoUI.OCUPADO
 
-                        AsientoItemMejorado(
+                        AsientoItem(
                             asiento = asiento,
                             esOcupado = esOcupado,
                             esSeleccionado = esSeleccionado,
@@ -288,17 +287,17 @@ fun MapaAsientosMejorado(
 
 
 @Composable
-fun AsientoItemMejorado(
+fun AsientoItem(
     asiento: AsientoDTO,
     esOcupado: Boolean,
     esSeleccionado: Boolean,
     onClick: () -> Unit,
-    size: androidx.compose.ui.unit.Dp = 28.dp
+    size: Dp = 28.dp
 ) {
     val color = when {
-        esOcupado -> Color(0xFFE53935) // Rojo más suave
-        esSeleccionado -> Color(0xFFFDD835) // Amarillo vibrante
-        else -> Color(0xFF4CAF50) // Verde suave
+        esOcupado -> Color(0xFFE53935) // Rojo
+        esSeleccionado -> Color(0xFFFDD835) // Amarillo
+        else -> Color(0xFF4CAF50) // Verde
     }
 
     val borderColor = when {

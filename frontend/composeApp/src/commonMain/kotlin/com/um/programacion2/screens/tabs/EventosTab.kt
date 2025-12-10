@@ -13,11 +13,14 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
+import cafe.adriel.voyager.navigator.LocalNavigator
+import cafe.adriel.voyager.navigator.currentOrThrow
 import cafe.adriel.voyager.navigator.tab.Tab
 import cafe.adriel.voyager.navigator.tab.TabOptions
 import kotlinx.coroutines.launch
-import com.um.programacion2.network.EventoService
+import com.um.programacion2.network.services.EventoService
 import com.um.programacion2.network.model.EventoDTO
+import com.um.programacion2.screens.evento.DetalleEventoScreen
 
 object EventosTab : Tab {
 
@@ -37,8 +40,9 @@ object EventosTab : Tab {
     @Composable
     override fun Content() {
         val scope = rememberCoroutineScope()
-        // Instanciación directa del servicio
         val eventoService = remember { EventoService() }
+        val rootNavigator = LocalNavigator.currentOrThrow.parent ?: LocalNavigator.currentOrThrow
+
 
         var eventosList by remember { mutableStateOf<List<EventoDTO>>(emptyList()) }
         var isLoading by remember { mutableStateOf(false) }
@@ -51,7 +55,6 @@ object EventosTab : Tab {
                 try {
                     val resultados = eventoService.getAllEventos()
                     if (resultados.isEmpty()) {
-                        // Podríamos diferenciar error de lista vacía real, pero por simplicidad:
                         errorMessage = "No se encontraron eventos disponibles."
                     } else {
                         eventosList = resultados
@@ -102,8 +105,7 @@ object EventosTab : Tab {
                 ) {
                     items(eventosList) { evento ->
                         EventoCard(evento) {
-                            //navegación al detalle
-                            println("Click en evento: ${evento.titulo}")
+                            rootNavigator.push(DetalleEventoScreen(evento))
                         }
                     }
                 }
