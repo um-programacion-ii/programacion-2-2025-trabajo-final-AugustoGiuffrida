@@ -64,7 +64,6 @@ public class EventoResource {
     public ResponseEntity<Void> sincronizarEventos() {
         LOG.info("REST request para sincronizar eventos desde Cátedra");
 
-        // Llama al servicio que creamos
         eventoService.sincronizarEventosCatedra();
 
         return ResponseEntity.ok().build();

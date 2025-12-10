@@ -1,8 +1,9 @@
-package com.um.programacion2.network
+package com.um.programacion2.network.services
 
+import com.um.programacion2.network.NetworkUtils
+import com.um.programacion2.network.model.AccountDTO
 import io.ktor.client.call.body
 import io.ktor.client.request.get
-import com.um.programacion2.network.model.AccountDTO
 
 class AccountService {
     private val httpClient = NetworkUtils.httpClient

@@ -10,7 +10,9 @@ data class EventoDTO(
     val descripcion: String,
     val fecha: String,
     val precioEntrada: Double,
-    val eventoTipo: EventoTipo? = null
+    val eventoTipo: EventoTipo? = null,
+    val filaAsientos: Int = 0,
+    val columnAsientos: Int = 0,
 )
 
 @Serializable

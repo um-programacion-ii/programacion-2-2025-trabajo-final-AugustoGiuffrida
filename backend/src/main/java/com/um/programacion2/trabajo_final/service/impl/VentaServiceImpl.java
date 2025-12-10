@@ -200,7 +200,17 @@ public class VentaServiceImpl implements VentaService {
     private void validarAsientosCompra(SesionVentaDTO sesion, ConfirmarCompraDTO compraDTO) {
         List<AsientoSesionDTO> bloqueados = sesion.getAsientosSeleccionados();
 
+        Evento evento = recuperarEvento(sesion.getEventoId());
+        int maxFilas = evento.getFilaAsientos();
+        int maxColumnas = evento.getColumnAsientos();
+
         for (DetalleAsientoCompra detalle : compraDTO.getDetalles()) {
+
+            if (detalle.getFila() > maxFilas || detalle.getColumna() > maxColumnas || detalle.getFila() < 1 || detalle.getColumna() < 1) {
+                throw new RuntimeException("Error: El asiento (" + detalle.getFila() + "," + detalle.getColumna() +
+                    ") no existe en este evento. Límites: " + maxFilas + "x" + maxColumnas);
+            }
+
             boolean asientoEstaBloqueado = bloqueados.stream().anyMatch(asiento ->
                 asiento.getFila() == detalle.getFila() &&
                     asiento.getColumna() == detalle.getColumna()

@@ -19,14 +19,14 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import cafe.adriel.voyager.navigator.tab.Tab
 import cafe.adriel.voyager.navigator.tab.TabOptions
-import com.um.programacion2.network.AuthService
+import com.um.programacion2.network.services.AuthService
 import com.um.programacion2.screens.LoginScreen
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.filled.Email
 import androidx.compose.material3.*
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.unit.dp
-import com.um.programacion2.network.AccountService
+import com.um.programacion2.network.services.AccountService
 import androidx.compose.foundation.background
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.filled.Badge
