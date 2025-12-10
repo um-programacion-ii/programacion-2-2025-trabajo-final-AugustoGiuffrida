@@ -19,6 +19,11 @@ public interface VentaRepository extends JpaRepository<Venta, Long> {
     @Query("select venta from Venta venta where venta.user.login = ?#{authentication.name}")
     List<Venta> findByUserIsCurrentUser();
 
+    @Query("select distinct v from Venta v left join fetch v.evento left join fetch v.user where v.user.login = :login")
+    List<Venta> findAllByUserLogin(@Param("login") String login);
+
+    List<Venta> findByUser_Login(String login);
+
     List<Venta> findAllByEstadoVenta(EstadoVenta estadoVenta);
 
 
