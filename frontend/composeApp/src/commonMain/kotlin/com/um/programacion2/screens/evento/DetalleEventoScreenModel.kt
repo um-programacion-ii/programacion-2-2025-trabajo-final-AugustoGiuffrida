@@ -45,8 +45,8 @@ class DetalleEventoScreenModel(
             val ocupadosSet = ocupadosRedis.map { "${it.fila}-${it.columna}" }.toSet()
 
             // 2. Construir la Sala Completa
-            val filas = evento.filaAsientos
-            val columnas = evento.columnAsientos
+            val filas = evento.filaAsientos ?:10
+            val columnas = evento.columnAsientos ?:10
 
             val matrizCompleta = mutableListOf<AsientoDTO>()
 

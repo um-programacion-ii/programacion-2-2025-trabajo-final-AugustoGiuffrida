@@ -65,6 +65,8 @@ kotlin {
             implementation(libs.voyager.transitions)
             implementation(libs.voyager.koin)
             implementation(libs.voyager.tabNavigator)
+            implementation(libs.coil.compose)
+            implementation(libs.coil.network.ktor3)
         }
         commonTest.dependencies {
             implementation(libs.kotlin.test)

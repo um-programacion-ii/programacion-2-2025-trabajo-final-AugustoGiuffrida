@@ -28,6 +28,7 @@ import com.um.programacion2.network.services.AsientoService
 import com.um.programacion2.network.model.AsientoDTO
 import com.um.programacion2.network.model.EventoDTO
 import com.um.programacion2.network.model.EstadoAsientoUI
+import com.um.programacion2.screens.evento.BottomBarCompra
 
 data class DetalleEventoScreen(val evento: EventoDTO) : Screen {
 
@@ -48,7 +49,7 @@ data class DetalleEventoScreen(val evento: EventoDTO) : Screen {
         Scaffold(
             topBar = {
                 TopAppBar(
-                    title = { Text(evento.titulo, maxLines = 1) },
+                    title = { evento.titulo?.let { Text(it, maxLines = 1) } },
                     navigationIcon = {
                         IconButton(onClick = { navigator.pop() }) {
                             Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
@@ -73,7 +74,7 @@ data class DetalleEventoScreen(val evento: EventoDTO) : Screen {
                 if (state.seleccionados.isNotEmpty()) {
                     BottomBarCompra(
                         cantidad = state.seleccionados.size,
-                        total = (state.seleccionados.size * evento.precioEntrada),
+                        total = (state.seleccionados.size * (evento.precioEntrada ?: 0.0)),
                         onContinuar = {
                             // TODO: Navegar a pantalla de confirmación
                         }
