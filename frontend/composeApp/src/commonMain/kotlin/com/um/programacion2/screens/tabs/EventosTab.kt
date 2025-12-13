@@ -17,6 +17,7 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import cafe.adriel.voyager.navigator.tab.Tab
 import cafe.adriel.voyager.navigator.tab.TabOptions
+import coil3.compose.AsyncImage
 import kotlinx.coroutines.launch
 import com.um.programacion2.network.services.EventoService
 import com.um.programacion2.network.model.EventoDTO
@@ -122,6 +123,18 @@ fun EventoCard(evento: EventoDTO, onClick: () -> Unit) {
             .clickable { onClick() },
         elevation = CardDefaults.cardElevation(defaultElevation = 4.dp)
     ) {
+        Column {
+            // 1. IMAGEN DE CABECERA
+            if (!evento.imagen.isNullOrBlank()) {
+                AsyncImage(
+                    model = evento.imagen,
+                    contentDescription = null,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .height(150.dp), // Altura fija para la imagen
+                    contentScale = androidx.compose.ui.layout.ContentScale.Crop
+                )
+            }
         Column(
             modifier = Modifier.padding(16.dp)
         ) {
@@ -131,7 +144,7 @@ fun EventoCard(evento: EventoDTO, onClick: () -> Unit) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = evento.titulo,
+                    text = evento.titulo ?:"Sin titulo",
                     style = MaterialTheme.typography.titleLarge,
                     maxLines = 1,
                     overflow = TextOverflow.Ellipsis,
@@ -147,7 +160,7 @@ fun EventoCard(evento: EventoDTO, onClick: () -> Unit) {
             Spacer(modifier = Modifier.height(4.dp))
 
             Text(
-                text = evento.resumen,
+                text = evento.resumen ?:"Sin resumen" ,
                 style = MaterialTheme.typography.bodyMedium,
                 maxLines = 2,
                 overflow = TextOverflow.Ellipsis
@@ -165,7 +178,7 @@ fun EventoCard(evento: EventoDTO, onClick: () -> Unit) {
                 Spacer(modifier = Modifier.width(4.dp))
                 // Formateo básico de la fecha string
                 Text(
-                    text = evento.fecha.take(10),
+                    text = evento.fecha?.take(10) ?: "10/12/2025",
                     style = MaterialTheme.typography.bodySmall,
                     color = MaterialTheme.colorScheme.secondary
                 )
@@ -180,4 +193,4 @@ fun EventoCard(evento: EventoDTO, onClick: () -> Unit) {
             }
         }
     }
-}
+}}

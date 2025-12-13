@@ -13,15 +13,12 @@ import org.mapstruct.*;
  */
 @Mapper(componentModel = "spring")
 public interface VentaMapper extends EntityMapper<VentaDTO, Venta> {
-    @Mapping(target = "evento", source = "evento", qualifiedByName = "eventoTitulo")
+    @Mapping(target = "evento", source = "evento", qualifiedByName = "eventoCompleto")
     @Mapping(target = "user", source = "user", qualifiedByName = "userLogin")
     VentaDTO toDto(Venta s);
 
-    @Named("eventoTitulo")
-    @BeanMapping(ignoreByDefault = true)
-    @Mapping(target = "id", source = "id")
-    @Mapping(target = "titulo", source = "titulo")
-    EventoDTO toDtoEventoTitulo(Evento evento);
+    @Named("eventoCompleto")
+    EventoDTO toDtoEventoCompleto(Evento evento);
 
     @Named("userLogin")
     @BeanMapping(ignoreByDefault = true)

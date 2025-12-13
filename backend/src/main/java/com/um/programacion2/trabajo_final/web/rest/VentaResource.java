@@ -1,5 +1,6 @@
 package com.um.programacion2.trabajo_final.web.rest;
 
+import com.um.programacion2.trabajo_final.domain.Venta;
 import com.um.programacion2.trabajo_final.repository.VentaRepository;
 import com.um.programacion2.trabajo_final.security.SecurityUtils;
 import com.um.programacion2.trabajo_final.service.VentaService;
@@ -7,6 +8,7 @@ import com.um.programacion2.trabajo_final.service.dto.ConfirmarCompraDTO;
 import com.um.programacion2.trabajo_final.service.dto.SolicitudBloqueoDTO;
 import com.um.programacion2.trabajo_final.service.dto.VentaDTO;
 import com.um.programacion2.trabajo_final.service.impl.VentaRetryServiceImpl;
+import com.um.programacion2.trabajo_final.service.mapper.VentaMapper;
 import com.um.programacion2.trabajo_final.web.rest.errors.BadRequestAlertException;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
@@ -15,6 +17,8 @@ import java.net.URISyntaxException;
 import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
+import java.util.stream.Collectors;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
@@ -40,11 +44,13 @@ public class VentaResource {
     private final VentaService ventaService;
     private final VentaRetryServiceImpl ventaRetryServiceImpl;
     private final VentaRepository ventaRepository;
+    private final VentaMapper ventaMapper;
 
-    public VentaResource(VentaService ventaService, VentaRepository ventaRepository, VentaRetryServiceImpl ventaRetryServiceImpl) {
+    public VentaResource(VentaService ventaService, VentaRepository ventaRepository, VentaRetryServiceImpl ventaRetryServiceImpl, VentaMapper ventaMapper) {
         this.ventaService = ventaService;
         this.ventaRepository = ventaRepository;
         this.ventaRetryServiceImpl = ventaRetryServiceImpl;
+        this.ventaMapper = ventaMapper;
     }
 
     @PostMapping("/reintentar/{id}")
@@ -173,8 +179,19 @@ public class VentaResource {
      */
     @GetMapping("")
     public List<VentaDTO> getAllVentas(@RequestParam(name = "eagerload", required = false, defaultValue = "true") boolean eagerload) {
-        LOG.debug("REST request to get all Ventas");
-        return ventaService.findAll();
+        String currentUserLogin = SecurityUtils.getCurrentUserLogin()
+            .orElseThrow(() -> new RuntimeException("No hay usuario logueado"));
+
+        LOG.debug("REST request to get Ventas for user: {}", currentUserLogin);
+
+        List<Venta> ventas = ventaRepository.findAllByUserLogin(currentUserLogin);
+
+        LOG.debug("Encontradas {} ventas para el usuario {}", ventas.size(), currentUserLogin);
+
+        // 3. Convertir a DTO
+        return ventas.stream()
+            .map(ventaMapper::toDto)
+            .collect(Collectors.toList());
     }
 
     /**

@@ -16,6 +16,8 @@ import cafe.adriel.voyager.navigator.tab.CurrentTab
 import cafe.adriel.voyager.navigator.tab.TabNavigator
 import com.um.programacion2.screens.tabs.EventosTab
 import com.um.programacion2.screens.tabs.PerfilTab
+import com.um.programacion2.screens.tabs.UserVentasTab
+
 class MainNavigationScreen : Screen {
 
     @Composable
@@ -24,13 +26,14 @@ class MainNavigationScreen : Screen {
             Scaffold(
                 bottomBar = {
                     NavigationBar {
-                        // Agregamos los items de la barra inferior
+                        // Agregar items barra inferior
                         TabNavigationItem(EventosTab)
+                        TabNavigationItem(UserVentasTab)
                         TabNavigationItem(PerfilTab)
                     }
                 }
             ) { innerPadding ->
-                // Renderiza el contenido del Tab actual
+                // Renderizar contenido del Tab actual
                 Box(modifier = Modifier.padding(innerPadding)) {
                     CurrentTab()
                 }
