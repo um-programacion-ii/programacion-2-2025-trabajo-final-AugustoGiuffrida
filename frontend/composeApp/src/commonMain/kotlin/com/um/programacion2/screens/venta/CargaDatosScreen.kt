@@ -1,4 +1,4 @@
-package com.um.programacion2.screens.compra
+package com.um.programacion2.screens.venta
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -18,10 +18,13 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.um.programacion2.network.model.AccountDTO
 import com.um.programacion2.network.model.AsientoDTO
+import com.um.programacion2.network.model.AsientoSesionDTO
 import com.um.programacion2.network.model.ConfirmarCompraDTO
 import com.um.programacion2.network.model.DetalleAsientoCompra
 import com.um.programacion2.network.model.EventoDTO
+import com.um.programacion2.network.model.SolicitudBloqueoDTO
 import com.um.programacion2.network.services.AccountService
+import com.um.programacion2.network.services.VentaService
 import kotlinx.coroutines.launch
 import kotlinx.serialization.json.Json
 
@@ -35,9 +38,11 @@ data class CargaDatosScreen(
     override fun Content() {
         val navigator = LocalNavigator.currentOrThrow
         val scope = rememberCoroutineScope()
+        val snackbarHostState = remember { SnackbarHostState() }
 
         // Servicios
         val accountService = remember { AccountService() }
+        val ventaService = remember { VentaService() }
 
         // Estado
         val nombresState = remember { mutableStateMapOf<String, String>() }
@@ -76,6 +81,7 @@ data class CargaDatosScreen(
         }
 
         Scaffold(
+            snackbarHost = { SnackbarHost(snackbarHostState) }, // errores
             topBar = {
                 TopAppBar(
                     title = { Text("Confirmar Asistentes") },
@@ -88,38 +94,66 @@ data class CargaDatosScreen(
             },
             bottomBar = {
                 Button(
+                    modifier = Modifier.fillMaxWidth().padding(16.dp),
+                    enabled = isFormValid && !isLoadingUser,
                     onClick = {
-                        // --- 2. Preparar DTO para el Backend ---
-                        val detalles = asientosSeleccionados.map { asiento ->
-                            DetalleAsientoCompra(
-                                fila = asiento.fila,
-                                columna = asiento.columna,
-                                nombrePersona = nombresState["${asiento.fila}-${asiento.columna}"] ?: ""
-                            )
+                        scope.launch {
+                            isLoadingUser = true // Reusamos esta variable para mostrar loading
+
+                            try {
+                                // --- PASO 1: BLOQUEAR ASIENTOS ---
+                                val solicitudBloqueo = SolicitudBloqueoDTO(
+                                    eventoId = evento.id,
+                                    asientos = asientosSeleccionados.map {
+                                        AsientoSesionDTO(
+                                            it.fila,
+                                            it.columna
+                                        )
+                                    }
+                                )
+
+                                val bloqueoExitoso = ventaService.bloquearAsientos(solicitudBloqueo)
+
+                                if (!bloqueoExitoso) {
+                                    snackbarHostState.showSnackbar("Error: Los asientos ya no están disponibles.")
+                                    isLoadingUser = false
+                                    return@launch
+                                }
+
+                                // --- PASO 2: REALIZAR LA COMPRA ---
+                                val detallesCompra = asientosSeleccionados.map { asiento ->
+                                    DetalleAsientoCompra(
+                                        fila = asiento.fila,
+                                        columna = asiento.columna,
+                                        nombrePersona = nombresState["${asiento.fila}-${asiento.columna}"] ?: ""
+                                    )
+                                }
+
+                                val compraDTO = ConfirmarCompraDTO(detalles = detallesCompra)
+                                val ventaResultado = ventaService.comprar(compraDTO)
+
+                                if (ventaResultado != null && ventaResultado.resultado == true) {
+                                    // ¡EXITO TOTAL! -> Navegar al ticket
+                                    navigator.replace(DetalleVentaScreen(ventaResultado))
+                                } else {
+                                    // Falló el pago o la confirmación final
+                                    val mensaje = ventaResultado?.descripcion ?: "Error al procesar el pago."
+                                    snackbarHostState.showSnackbar(mensaje)
+                                }
+
+                            } catch (e: Exception) {
+                                e.printStackTrace()
+                                snackbarHostState.showSnackbar("Error de conexión.")
+                            } finally {
+                                isLoadingUser = false
+                            }
                         }
-
-                        val compraDTO = ConfirmarCompraDTO(detalles = detalles)
-
-                        println("--- INICIO PROCESO DE COMPRA ---")
-                        println("Payload a enviar: ${Json.encodeToString(compraDTO)}")
-
-                        // TODO: IMPLEMENTAR LA LÓGICA SECUENCIAL:
-                        // 1. ventaService.seleccionarSesion(asientos)
-                        // 2. ventaService.bloquear(bloqueoDTO)
-                        // 3. ventaService.comprar(compraDTO)
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp),
-                    enabled = isFormValid && !isLoadingUser
+                    }
                 ) {
                     if (isLoadingUser) {
-                        CircularProgressIndicator(
-                            modifier = Modifier.size(24.dp),
-                            color = MaterialTheme.colorScheme.onPrimary
-                        )
+                        CircularProgressIndicator(modifier = Modifier.size(24.dp), color = Color.White)
                     } else {
-                        Text("Continuar al Pago")
+                        Text("Pagar y Confirmar")
                     }
                 }
             }

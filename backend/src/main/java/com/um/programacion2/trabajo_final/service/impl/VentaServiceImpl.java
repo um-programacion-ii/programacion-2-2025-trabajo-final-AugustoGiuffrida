@@ -75,8 +75,17 @@ public class VentaServiceImpl implements VentaService {
     public void bloquearAsientos(String login, SolicitudBloqueoDTO solicitudDTO) {
         LOG.debug("Solicitando bloqueo de asientos para usuario: {}", login);
 
+        // --- Buscar ID real de Cátedra ---
+        Evento eventoLocal = eventoRepository.findById(solicitudDTO.getEventoId())
+            .orElseThrow(() -> new RuntimeException("Evento local no encontrado con ID: " + solicitudDTO.getEventoId()));
+
+        // Verificamos que tenga el ID externo vinculado
+        if (eventoLocal.getEventoIdCatedra() == null) {
+            throw new RuntimeException("El evento no está sincronizado con la cátedra (ID externo nulo).");
+        }
+
         BloqueoRequest request = new BloqueoRequest();
-        request.setEventoId(solicitudDTO.getEventoId());
+        request.setEventoId(eventoLocal.getEventoIdCatedra());
 
         List<AsientoBloqueoDTO> asientosCatedra = new ArrayList<>();
         for (AsientoSesionDTO a : solicitudDTO.getAsientos()) {
@@ -150,7 +159,7 @@ public class VentaServiceImpl implements VentaService {
     }
 
     private Evento recuperarEvento(Long id) {
-        return eventoRepository.findByEventoIdCatedra(id)
+        return eventoRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Evento no encontrado localmente. Sincronice los eventos primero."));
     }
 

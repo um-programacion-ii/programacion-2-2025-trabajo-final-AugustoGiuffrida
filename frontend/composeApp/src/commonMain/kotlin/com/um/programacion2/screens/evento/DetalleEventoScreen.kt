@@ -26,10 +26,14 @@ import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
 import com.um.programacion2.network.services.AsientoService
 import com.um.programacion2.network.model.AsientoDTO
+import com.um.programacion2.network.model.AsientoSesionDTO
 import com.um.programacion2.network.model.EventoDTO
 import com.um.programacion2.network.model.EstadoAsientoUI
-import com.um.programacion2.screens.compra.CargaDatosScreen
-import com.um.programacion2.screens.evento.BottomBarCompra
+import com.um.programacion2.network.model.EstadoSesion
+import com.um.programacion2.network.model.SesionVentaDTO
+import com.um.programacion2.network.services.VentaService
+import com.um.programacion2.screens.venta.CargaDatosScreen
+import kotlinx.coroutines.launch
 
 data class DetalleEventoScreen(val evento: EventoDTO) : Screen {
 
@@ -46,6 +50,8 @@ data class DetalleEventoScreen(val evento: EventoDTO) : Screen {
         var scale by remember { mutableStateOf(1f) }
         var offsetX by remember { mutableStateOf(0f) }
         var offsetY by remember { mutableStateOf(0f) }
+        val ventaService = remember { VentaService() }
+        val scope = rememberCoroutineScope()
 
         Scaffold(
             topBar = {
@@ -77,12 +83,32 @@ data class DetalleEventoScreen(val evento: EventoDTO) : Screen {
                         cantidad = state.seleccionados.size,
                         total = (state.seleccionados.size * (evento.precioEntrada ?: 0.0)),
                         onContinuar = {
-                            navigator.push(
-                                CargaDatosScreen(
-                                    evento = evento,
-                                    asientosSeleccionados = state.seleccionados.toList()
+                            // --- GUARDADO DE SESION ---
+                            scope.launch {
+                                // 1. Convertir AsientoDTO (UI) a AsientoSesionDTO (Red)
+                                val asientosRed = state.seleccionados.map {
+                                    AsientoSesionDTO(it.fila, it.columna)
+                                }
+
+                                val sesionDTO = SesionVentaDTO(
+                                    eventoId = evento.id,
+                                    nombreEvento = evento.titulo,
+                                    asientosSeleccionados = asientosRed,
+                                    estadoActual = EstadoSesion.SELECCIONANDO,
                                 )
-                            )
+
+                                // 2. Guardar en Backend
+                                // No bloqueam la navegación si falla, pero se intentam guardar.
+                                ventaService.actualizarSesion(sesionDTO)
+
+                                // 3. Navegar
+                                navigator.push(
+                                    CargaDatosScreen(
+                                        evento = evento,
+                                        asientosSeleccionados = state.seleccionados.toList()
+                                    )
+                                )
+                            }
                         }
                     )
                 }

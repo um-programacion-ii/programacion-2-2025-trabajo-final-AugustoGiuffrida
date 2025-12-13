@@ -24,15 +24,3 @@ data class EventoTipo(
     val descripcion: String? = null
 )
 
-@Serializable
-data class ConfirmarCompraDTO(
-    val detalles: List<DetalleAsientoCompra>,
-    val medioPago: String = "Efectivo"
-)
-
-@Serializable
-data class DetalleAsientoCompra(
-    val fila: Int,
-    val columna: Int,
-    val nombrePersona: String
-)
