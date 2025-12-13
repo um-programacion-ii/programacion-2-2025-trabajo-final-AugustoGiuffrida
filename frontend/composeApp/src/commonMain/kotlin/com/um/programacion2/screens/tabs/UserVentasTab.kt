@@ -2,11 +2,12 @@ package com.um.programacion2.screens.tabs
 
 import cafe.adriel.voyager.navigator.tab.Tab
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ReceiptLong
+import androidx.compose.material.icons.automirrored.filled.ReceiptLong
 import androidx.compose.material.icons.filled.ConfirmationNumber
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -16,10 +17,13 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.rememberVectorPainter
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import cafe.adriel.voyager.navigator.LocalNavigator
+import cafe.adriel.voyager.navigator.currentOrThrow
 import cafe.adriel.voyager.navigator.tab.TabOptions
 import com.um.programacion2.network.services.VentaService
 import com.um.programacion2.network.model.EstadoVenta
 import com.um.programacion2.network.model.VentaDTO
+import com.um.programacion2.screens.venta.DetalleVentaScreen
 import kotlinx.coroutines.launch
 import kotlin.math.roundToLong
 
@@ -27,7 +31,7 @@ object UserVentasTab: Tab {
     override val options: TabOptions
         @Composable
         get() {
-            val icon = rememberVectorPainter(Icons.Default.ReceiptLong)
+            val icon = rememberVectorPainter(Icons.AutoMirrored.Filled.ReceiptLong)
             return remember {
                 TabOptions(
                     index = 2u, // Índice 2 (Eventos=0, Perfil=1, Ventas=2)
@@ -41,7 +45,7 @@ object UserVentasTab: Tab {
     override fun Content() {
         val scope = rememberCoroutineScope()
         val ventaService = remember { VentaService() }
-
+        val parentNavigator = LocalNavigator.currentOrThrow.parent ?: LocalNavigator.currentOrThrow
         var ventas by remember { mutableStateOf<List<VentaDTO>>(emptyList()) }
         var isLoading by remember { mutableStateOf(true) }
 
@@ -82,7 +86,9 @@ object UserVentasTab: Tab {
                     verticalArrangement = Arrangement.spacedBy(12.dp)
                 ) {
                     items(ventas) { venta ->
-                        VentaItem(venta)
+                        VentaItem(venta){
+                            parentNavigator.push(DetalleVentaScreen(venta))
+                        }
                     }
                 }
             }
@@ -91,10 +97,10 @@ object UserVentasTab: Tab {
 }
 
 @Composable
-fun VentaItem(venta: VentaDTO) {
+fun VentaItem(venta: VentaDTO, onClick: () -> Unit) {
     // Definir color según estado
     val (colorEstado, textoEstado) = when {
-        venta.resultado == true -> Color(0xFF4CAF50) to "EXITOSA" // Verde
+            venta.resultado -> Color(0xFF4CAF50) to "EXITOSA" // Verde
         venta.estadoVenta == EstadoVenta.CONFIRMADA -> Color(0xFF4CAF50) to "CONFIRMADA"
         venta.estadoVenta == EstadoVenta.RECHAZADA -> Color(0xFFE53935) to "RECHAZADA" // Rojo
         else -> Color(0xFFFF9800) to "PENDIENTE/ERROR" // Naranja
@@ -108,6 +114,7 @@ fun VentaItem(venta: VentaDTO) {
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(16.dp)
+                .clickable { onClick()}
         ) {
             // Cabecera: ID y Estado
             Row(

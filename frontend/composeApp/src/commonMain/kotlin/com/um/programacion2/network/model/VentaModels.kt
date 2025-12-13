@@ -18,7 +18,7 @@ data class UserDTO(
 @Serializable
 data class VentaDTO(
     val id: Long,
-    val ventaIdCatedra: Long,
+    val ventaIdCatedra: Long? = null,
     val fechaVenta: String,
     val precioVenta: Double,
     val resultado: Boolean,

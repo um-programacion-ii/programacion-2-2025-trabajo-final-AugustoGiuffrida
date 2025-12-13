@@ -28,6 +28,7 @@ import com.um.programacion2.network.services.AsientoService
 import com.um.programacion2.network.model.AsientoDTO
 import com.um.programacion2.network.model.EventoDTO
 import com.um.programacion2.network.model.EstadoAsientoUI
+import com.um.programacion2.screens.compra.CargaDatosScreen
 import com.um.programacion2.screens.evento.BottomBarCompra
 
 data class DetalleEventoScreen(val evento: EventoDTO) : Screen {
@@ -76,7 +77,12 @@ data class DetalleEventoScreen(val evento: EventoDTO) : Screen {
                         cantidad = state.seleccionados.size,
                         total = (state.seleccionados.size * (evento.precioEntrada ?: 0.0)),
                         onContinuar = {
-                            // TODO: Navegar a pantalla de confirmación
+                            navigator.push(
+                                CargaDatosScreen(
+                                    evento = evento,
+                                    asientosSeleccionados = state.seleccionados.toList()
+                                )
+                            )
                         }
                     )
                 }
