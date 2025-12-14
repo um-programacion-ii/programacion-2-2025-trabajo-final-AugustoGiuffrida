@@ -11,6 +11,11 @@ import org.mapstruct.*;
  */
 @Mapper(componentModel = "spring")
 public interface AsientoVendidoMapper extends EntityMapper<AsientoVendidoDTO, AsientoVendido> {
-    @Mapping(target = "venta", source = "venta")
+    @Mapping(target = "venta", source = "venta",qualifiedByName = "ventaId")
     AsientoVendidoDTO toDto(AsientoVendido s);
+
+    @Named("ventaId")
+    @BeanMapping(ignoreByDefault = true)
+    @Mapping(target = "id", source = "id")
+    VentaDTO toDtoVentaId(Venta venta);
 }

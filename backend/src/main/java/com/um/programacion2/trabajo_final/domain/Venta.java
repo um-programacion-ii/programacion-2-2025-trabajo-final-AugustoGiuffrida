@@ -50,7 +50,7 @@ public class Venta implements Serializable {
     /**
      * Una Venta puede tener muchos Asientos Vendidos.
      */
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "venta")
+    @OneToMany(fetch = FetchType.EAGER, mappedBy = "venta")
     @JsonIgnoreProperties(value = { "venta" }, allowSetters = true)
     private Set<AsientoVendido> asientos = new HashSet<>();
 

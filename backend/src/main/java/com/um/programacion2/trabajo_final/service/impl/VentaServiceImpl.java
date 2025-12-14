@@ -17,10 +17,7 @@ import com.um.programacion2.trabajo_final.service.dto.*;
 import com.um.programacion2.trabajo_final.service.dto.catedra.*;
 import com.um.programacion2.trabajo_final.service.mapper.VentaMapper;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -177,14 +174,19 @@ public class VentaServiceImpl implements VentaService {
 
         venta = ventaRepository.saveAndFlush(venta);
 
+        List<AsientoVendido> asientosGuardados = new ArrayList<>();
+
         for (DetalleAsientoCompra detalle : compraDTO.getDetalles()) {
             AsientoVendido asiento = new AsientoVendido();
             asiento.setFila(detalle.getFila());
             asiento.setColumna(detalle.getColumna());
             asiento.setPersona(detalle.getNombrePersona());
             asiento.setVenta(venta);
-            asientoVendidoRepository.save(asiento);
+            asiento = asientoVendidoRepository.save(asiento);
+            asientosGuardados.add(asiento);
         }
+
+        venta.setAsientos(new HashSet<>(asientosGuardados));
 
         venta.setResultado(false);
         return venta;
