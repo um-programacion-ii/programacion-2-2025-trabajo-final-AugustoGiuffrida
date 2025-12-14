@@ -12,7 +12,6 @@ data class AccountDTO(
     val imageUrl: String? = null,
     val authorities: List<String> = emptyList() //["ROLE_USER", "ROLE_ADMIN"]
 ) {
-    // Helper para obtener nombre completo
     fun fullName(): String {
         return if (!firstName.isNullOrBlank() || !lastName.isNullOrBlank()) {
             "${firstName.orEmpty()} ${lastName.orEmpty()}".trim()

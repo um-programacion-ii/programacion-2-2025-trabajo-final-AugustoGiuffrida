@@ -98,7 +98,7 @@ data class DetalleEventoScreen(val evento: EventoDTO) : Screen {
                                 )
 
                                 // 2. Guardar en Backend
-                                // No bloqueam la navegación si falla, pero se intentam guardar.
+                                // No bloquean la navegación si falla, pero se intentan guardar.
                                 ventaService.actualizarSesion(sesionDTO)
 
                                 // 3. Navegar
@@ -144,7 +144,6 @@ data class DetalleEventoScreen(val evento: EventoDTO) : Screen {
 
                 HorizontalDivider()
 
-                // Referencias de colores - Compactas
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()

@@ -98,7 +98,7 @@ data class CargaDatosScreen(
                     enabled = isFormValid && !isLoadingUser,
                     onClick = {
                         scope.launch {
-                            isLoadingUser = true // Reusamos esta variable para mostrar loading
+                            isLoadingUser = true
 
                             try {
                                 // --- PASO 1: BLOQUEAR ASIENTOS ---
@@ -111,16 +111,6 @@ data class CargaDatosScreen(
                                         )
                                     }
                                 )
-
-                                val bloqueoExitoso = ventaService.bloquearAsientos(solicitudBloqueo)
-
-                                if (!bloqueoExitoso) {
-                                    snackbarHostState.showSnackbar("Error: Los asientos ya no están disponibles.")
-                                    isLoadingUser = false
-                                    return@launch
-                                }
-
-                                // --- PASO 2: REALIZAR LA COMPRA ---
                                 val detallesCompra = asientosSeleccionados.map { asiento ->
                                     DetalleAsientoCompra(
                                         fila = asiento.fila,
@@ -129,17 +119,18 @@ data class CargaDatosScreen(
                                     )
                                 }
 
-                                val compraDTO = ConfirmarCompraDTO(detalles = detallesCompra)
-                                val ventaResultado = ventaService.comprar(compraDTO)
+                                val compraPendiente = ConfirmarCompraDTO(detalles = detallesCompra)
 
-                                if (ventaResultado != null && ventaResultado.resultado == true) {
-                                    // ¡EXITO TOTAL! -> Navegar al ticket
-                                    navigator.replace(DetalleVentaScreen(ventaResultado))
+                                // 2. EJECUTAR SOLO EL BLOQUEO
+                                val bloqueoExitoso = ventaService.bloquearAsientos(solicitudBloqueo)
+
+                                if (bloqueoExitoso) {
+                                    // 3. NAVEGAR AL CARRITO (Paso de Confirmación)
+                                    navigator.push(CarritoScreen(evento, compraPendiente))
                                 } else {
-                                    // Falló el pago o la confirmación final
-                                    val mensaje = ventaResultado?.descripcion ?: "Error al procesar el pago."
-                                    snackbarHostState.showSnackbar(mensaje)
+                                    snackbarHostState.showSnackbar("Los asientos ya no están disponibles.")
                                 }
+
 
                             } catch (e: Exception) {
                                 e.printStackTrace()
@@ -153,7 +144,7 @@ data class CargaDatosScreen(
                     if (isLoadingUser) {
                         CircularProgressIndicator(modifier = Modifier.size(24.dp), color = Color.White)
                     } else {
-                        Text("Pagar y Confirmar")
+                        Text("Reservar Asientos")
                     }
                 }
             }

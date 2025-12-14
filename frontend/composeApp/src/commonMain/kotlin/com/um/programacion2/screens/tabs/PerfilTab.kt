@@ -151,9 +151,9 @@ object PerfilTab : Tab {
                         HorizontalDivider(color = MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = 0.2f))
                         Spacer(modifier = Modifier.height(16.dp))
 
-                        // 3. ID de Usuario (Útil para debug o soporte)
+                        // 3. ID de Usuario
                         ProfileItem(
-                            icon = Icons.Default.Badge, // O Icons.Default.Info
+                            icon = Icons.Default.Badge,
                             label = "ID de Usuario",
                             value = userAccount?.id?.toString() ?: "N/A"
                         )

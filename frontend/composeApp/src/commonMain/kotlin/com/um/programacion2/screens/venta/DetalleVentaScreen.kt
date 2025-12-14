@@ -5,9 +5,11 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.ConfirmationNumber
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.Event
+import androidx.compose.material.icons.filled.EventSeat
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.LocationOn
 import androidx.compose.material3.*
@@ -21,8 +23,10 @@ import androidx.compose.ui.unit.dp
 import cafe.adriel.voyager.core.screen.Screen
 import cafe.adriel.voyager.navigator.LocalNavigator
 import cafe.adriel.voyager.navigator.currentOrThrow
+import com.um.programacion2.network.model.AsientoVentaDTO
 import com.um.programacion2.network.model.EstadoVenta
 import com.um.programacion2.network.model.VentaDTO
+import com.um.programacion2.screens.MainNavigationScreen
 import kotlin.math.roundToLong
 
 data class DetalleVentaScreen(val venta: VentaDTO) : Screen {
@@ -46,11 +50,29 @@ data class DetalleVentaScreen(val venta: VentaDTO) : Screen {
                 TopAppBar(
                     title = { Text("Detalle del Ticket") },
                     navigationIcon = {
-                        IconButton(onClick = { navigator.pop() }) {
-                            Icon(Icons.AutoMirrored.Filled.ArrowBack, contentDescription = "Volver")
+                        IconButton(onClick = {
+                            if (navigator.canPop) {
+                                navigator.pop()
+                            } else {
+                                navigator.replaceAll(MainNavigationScreen())
+                            }
+                        }) {
+                            val icon = if (navigator.canPop) Icons.AutoMirrored.Filled.ArrowBack else Icons.Default.Close
+                            Icon(icon, contentDescription = "Cerrar")
                         }
                     }
                 )
+            },
+            bottomBar = {
+                // Botón extra para volver al inicio si es una compra exitosa
+                if (!navigator.canPop) {
+                    Button(
+                        onClick = { navigator.replaceAll(MainNavigationScreen()) },
+                        modifier = Modifier.fillMaxWidth().padding(16.dp)
+                    ) {
+                        Text("Volver al Inicio")
+                    }
+                }
             }
         ) { padding ->
             Column(
@@ -103,30 +125,26 @@ data class DetalleVentaScreen(val venta: VentaDTO) : Screen {
                     InfoRow(Icons.Default.ConfirmationNumber, "ID Cátedra", "#$idCatedraTexto")
                     InfoRow(Icons.Default.DateRange, "Fecha Compra", venta.fechaVenta.take(10))
                     InfoRow(Icons.Default.Info, "Estado", venta.descripcion)
+                    val total = venta.precioVenta.formatoDinero()
+                    InfoRow(Icons.Default.Info, "Total Pagado", "$$total")
                 }
 
                 Spacer(modifier = Modifier.height(24.dp))
 
-                // 4. Total Pagado (Destacado)
-                Card(
-                    elevation = CardDefaults.cardElevation(4.dp),
-                    colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceVariant),
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(24.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text("Total Pagado", style = MaterialTheme.typography.titleMedium)
-                        Text(
-                            text = "$${venta.precioVenta.formatoDinero()}",
-                            style = MaterialTheme.typography.headlineMedium,
-                            fontWeight = FontWeight.Bold,
-                            color = MaterialTheme.colorScheme.primary
-                        )
+                // 4. Asientos
+                if (venta.asientos.isNotEmpty()) {
+                    InfoSection(title = "Entradas (${venta.asientos.size})") {
+                        venta.asientos.forEach { asiento ->
+                            AsientoTicketRow(asiento)
+                            if (asiento != venta.asientos.last()) {
+                                HorizontalDivider(color = Color.LightGray.copy(alpha = 0.5f))
+                            }
+                        }
+                    }
+                } else {
+                    // Fallback si la lista viene vacía
+                    InfoSection(title = "Entradas") {
+                        Text("Detalle de asientos no disponible", style = MaterialTheme.typography.bodyMedium, color = Color.Gray)
                     }
                 }
             }
@@ -134,7 +152,36 @@ data class DetalleVentaScreen(val venta: VentaDTO) : Screen {
     }
 }
 
-// Componentes auxiliares para ordenar el código
+
+@Composable
+fun AsientoTicketRow(asiento: AsientoVentaDTO) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Icon(Icons.Default.EventSeat, null, tint = MaterialTheme.colorScheme.primary)
+        Spacer(modifier = Modifier.width(16.dp))
+        Column {
+            Text(
+                text = "Fila ${asiento.fila} - Asiento ${asiento.columna}",
+                style = MaterialTheme.typography.titleSmall,
+                fontWeight = FontWeight.Bold
+            )
+            // Mostrar nombre de la persona si existe
+            if (!asiento.persona.isNullOrBlank()) {
+                Text(
+                    text = asiento.persona,
+                    style = MaterialTheme.typography.bodySmall,
+                    color = Color.Gray
+                )
+            }
+        }
+    }
+}
+
+
 @Composable
 fun InfoSection(title: String, content: @Composable ColumnScope.() -> Unit) {
     Card(

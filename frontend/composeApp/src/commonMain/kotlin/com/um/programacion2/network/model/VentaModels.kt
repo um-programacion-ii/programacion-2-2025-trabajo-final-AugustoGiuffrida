@@ -13,7 +13,8 @@ enum class EstadoVenta {
 @Serializable
 enum class EstadoSesion {
     SELECCIONANDO,
-    CONFIRMANDO
+    CONFIRMANDO,
+    FINALIZADO
 }
 
 @Serializable
@@ -33,6 +34,7 @@ data class VentaDTO(
     val estadoVenta: EstadoVenta,
     val evento: EventoDTO,
     val user: UserDTO,
+    val asientos: List<AsientoVentaDTO> = emptyList()
 )
 
 @Serializable
@@ -53,6 +55,13 @@ data class DetalleAsientoCompra(
 data class AsientoSesionDTO(
     val fila: Int,
     val columna: Int
+)
+
+@Serializable
+data class AsientoVentaDTO(
+    val fila: Int,
+    val columna: Int,
+    val persona: String? = null
 )
 
 @Serializable

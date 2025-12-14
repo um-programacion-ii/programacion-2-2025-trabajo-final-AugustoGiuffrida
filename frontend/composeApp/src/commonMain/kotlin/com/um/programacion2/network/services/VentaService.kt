@@ -59,4 +59,13 @@ class VentaService {
             null
         }
     }
+
+    suspend fun getSesionActual(): SesionVentaDTO? {
+        return try {
+            // GET al endpoint que consulta Redis
+            httpClient.get("sesion").body()
+        } catch (e: Exception) {
+            null
+        }
+    }
 }
