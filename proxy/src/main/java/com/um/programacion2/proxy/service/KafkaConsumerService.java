@@ -16,9 +16,11 @@ public class KafkaConsumerService {
     private final String backendUrl;
 
     public KafkaConsumerService(
-        RestTemplate restTemplate,
-        @Value("${application.backend-url}") String backendUrl
-    ) {
+
+        @Value("${application.backend-url}")
+        String backendUrl,
+        RestTemplate restTemplate
+        ) {
         this.restTemplate = restTemplate;
         this.backendUrl = backendUrl;
     }
@@ -31,7 +33,7 @@ public class KafkaConsumerService {
         log.info("[KAFKA] Recibido mensaje: {}", mensaje);
 
         try {
-            // 1. Validar que tengamos el objeto ack (Es vital)
+            // 1. Validar que tengamos el objeto ack
             if (ack == null) {
                 log.error("X [KAFKA] Error Crítico: El objeto 'ack' es NULO. Revisa la configuración ack-mode.");
                 return;
