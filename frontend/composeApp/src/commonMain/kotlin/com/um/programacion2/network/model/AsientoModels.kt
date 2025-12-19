@@ -18,8 +18,8 @@ data class AsientosResponse(
 
 enum class EstadoAsientoUI {
     LIBRE,
-    OCUPADO,    // Incluye Vendido y Bloqueado por otros
-    SELECCIONADO // Estado local del usuario actual
+    OCUPADO,
+    SELECCIONADO
 }
 
 @Serializable

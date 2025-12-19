@@ -6,7 +6,9 @@ import jakarta.validation.constraints.*;
 import java.io.Serializable;
 import java.math.BigDecimal;
 import java.time.Instant;
+import java.util.HashSet;
 import java.util.Objects;
+import java.util.Set;
 
 /**
  * A DTO for the {@link com.um.programacion2.trabajo_final.domain.Venta} entity.
@@ -32,6 +34,8 @@ public class VentaDTO implements Serializable {
 
     private EstadoVenta estadoVenta;
 
+    private Set<AsientoVendidoDTO> asientos = new HashSet<>();
+
     @NotNull
     @Schema(description = "Una Venta pertenece a un solo Evento.")
     private EventoDTO evento;
@@ -39,6 +43,14 @@ public class VentaDTO implements Serializable {
     @NotNull
     @Schema(description = "Una Venta es realizada por un solo Usuario (User).\nEl User ya existe en JHipster.")
     private UserDTO user;
+
+    public Set<AsientoVendidoDTO> getAsientos() {
+        return asientos;
+    }
+
+    public void setAsientos(Set<AsientoVendidoDTO> asientos) {
+        this.asientos = asientos;
+    }
 
     public Long getId() {
         return id;

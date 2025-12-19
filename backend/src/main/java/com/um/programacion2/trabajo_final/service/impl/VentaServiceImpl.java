@@ -17,10 +17,7 @@ import com.um.programacion2.trabajo_final.service.dto.*;
 import com.um.programacion2.trabajo_final.service.dto.catedra.*;
 import com.um.programacion2.trabajo_final.service.mapper.VentaMapper;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.stream.Collectors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -75,8 +72,17 @@ public class VentaServiceImpl implements VentaService {
     public void bloquearAsientos(String login, SolicitudBloqueoDTO solicitudDTO) {
         LOG.debug("Solicitando bloqueo de asientos para usuario: {}", login);
 
+        // --- Buscar ID real de Cátedra ---
+        Evento eventoLocal = eventoRepository.findById(solicitudDTO.getEventoId())
+            .orElseThrow(() -> new RuntimeException("Evento local no encontrado con ID: " + solicitudDTO.getEventoId()));
+
+        // Verificamos que tenga el ID externo vinculado
+        if (eventoLocal.getEventoIdCatedra() == null) {
+            throw new RuntimeException("El evento no está sincronizado con la cátedra (ID externo nulo).");
+        }
+
         BloqueoRequest request = new BloqueoRequest();
-        request.setEventoId(solicitudDTO.getEventoId());
+        request.setEventoId(eventoLocal.getEventoIdCatedra());
 
         List<AsientoBloqueoDTO> asientosCatedra = new ArrayList<>();
         for (AsientoSesionDTO a : solicitudDTO.getAsientos()) {
@@ -150,7 +156,7 @@ public class VentaServiceImpl implements VentaService {
     }
 
     private Evento recuperarEvento(Long id) {
-        return eventoRepository.findByEventoIdCatedra(id)
+        return eventoRepository.findById(id)
             .orElseThrow(() -> new RuntimeException("Evento no encontrado localmente. Sincronice los eventos primero."));
     }
 
@@ -168,14 +174,19 @@ public class VentaServiceImpl implements VentaService {
 
         venta = ventaRepository.saveAndFlush(venta);
 
+        List<AsientoVendido> asientosGuardados = new ArrayList<>();
+
         for (DetalleAsientoCompra detalle : compraDTO.getDetalles()) {
             AsientoVendido asiento = new AsientoVendido();
             asiento.setFila(detalle.getFila());
             asiento.setColumna(detalle.getColumna());
             asiento.setPersona(detalle.getNombrePersona());
             asiento.setVenta(venta);
-            asientoVendidoRepository.save(asiento);
+            asiento = asientoVendidoRepository.save(asiento);
+            asientosGuardados.add(asiento);
         }
+
+        venta.setAsientos(new HashSet<>(asientosGuardados));
 
         venta.setResultado(false);
         return venta;

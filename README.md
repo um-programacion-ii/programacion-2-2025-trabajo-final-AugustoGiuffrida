@@ -1,285 +1,162 @@
-# backend
+# Trabajo Final: Sistema de Gestión de Eventos y Entradas
 
-This application was generated using JHipster 8.11.0, you can find documentation and help at [https://www.jhipster.tech/documentation-archive/v8.11.0](https://www.jhipster.tech/documentation-archive/v8.11.0).
+## 🎯 Objetivo General
 
-## Project Structure
+Construir un ecosistema distribuido para la venta y reserva de entradas a eventos. 
+El sistema debe sincronizar información en tiempo real con un servidor central (Cátedra) y permitir a los clientes móviles realizar reservas y compras 
+de asientos de manera concurrente, garantizando la consistencia de datos mediante bloqueos temporales y actualizaciones asíncronas.
 
-Node is required for generation and recommended for development. `package.json` is always generated for a better development experience with prettier, commit hooks, scripts and so on.
+## 🏗️ Arquitectura del Sistema
 
-In the project root, JHipster generates configuration files for tools like git, prettier, eslint, husky, and others that are well known and you can find references in the web.
+El sistema está compuesto por tres módulos principales desarrollados por el alumno, que interactúan con los servicios de la Cátedra:
 
-`/src/*` structure follows default Java structure.
+1. **Backend (JHipster/Spring Boot):** Núcleo del negocio. Maneja la persistencia local (MySQL), usuarios, sesiones de compra y orquesta la lógica de venta.
+2. **Proxy Service (Spring Boot):** Intermediario de infraestructura. Es el único componente con acceso directo a **Kafka** (para escuchar cambios en eventos) y **Redis** (para consultar el mapa de asientos en tiempo real) de la Cátedra.
+3. **Cliente Móvil (Kotlin Multiplatform):** Aplicación Android (y potencial iOS/Desktop) desarrollada con Compose Multiplatform que sirve como interfaz de usuario para la selección de butacas y pago.
 
-- `.yo-rc.json` - Yeoman configuration file
-  JHipster configuration is stored in this file at `generator-jhipster` key. You may find `generator-jhipster-*` for specific blueprints configuration.
-- `.yo-resolve` (optional) - Yeoman conflict resolver
-  Allows to use a specific action when conflicts are found skipping prompts for files that matches a pattern. Each line should match `[pattern] [action]` with pattern been a [Minimatch](https://github.com/isaacs/minimatch#minimatch) pattern and action been one of skip (default if omitted) or force. Lines starting with `#` are considered comments and are ignored.
-- `.jhipster/*.json` - JHipster entity configuration files
+---
 
-- `npmw` - wrapper to use locally installed npm.
-  JHipster installs Node and npm locally using the build tool by default. This wrapper makes sure npm is installed locally and uses it avoiding some differences different versions can cause. By using `./npmw` instead of the traditional `npm` you can configure a Node-less environment to develop or test your application.
-- `/src/main/docker` - Docker configurations for the application and services that the application depends on
+## 👨‍🎓 Información del Alumno
 
-## Development
+* **Nombre y Apellido**: Augusto Giuffrida
+* **Legajo**: 60137
+* **Materia**: Programación II - 2025
 
-The build system will install automatically the recommended version of Node and npm.
+---
 
-We provide a wrapper to launch npm.
-You will only need to run this command when dependencies change in [package.json](package.json).
+## 🛠️ Tecnologías y Herramientas
 
-```
-./npmw install
-```
+### Backend
 
-We use npm scripts and [Angular CLI][] with [Webpack][] as our build system.
+* **Framework:** Spring Boot (Generado con JHipster)
+* **Seguridad:** Spring Security con JWT
+* **Base de Datos:** MySQL 8.0 (Producción/Dev), H2 (Test)
+* **ORM:** Hibernate
 
-If you are using redis as a cache, you will have to launch a cache server.
-To start your cache server, run:
+### Proxy Service
 
-```
-docker compose -f src/main/docker/redis.yml up -d
-```
+* **Mensajería:** Spring Kafka (Consumer)
+* **Comunicación:** RestTemplate para reenvío al Backend
 
-The cache can also be turned off by adding to the application yaml:
+### Cliente Móvil
 
-```yaml
-spring:
-  cache:
-    type: none
-```
+* **Lenguaje:** Kotlin
+* **UI:** Jetpack Compose Multiplatform
+* **Red:** Ktor Client
+* **Navegación:** Voyager
+* **Serialización:** Kotlinx Serialization
 
-See [here](https://docs.spring.io/spring-boot/docs/current/reference/html/boot-features-caching.html#boot-features-caching-provider-none) for details.
+### Infraestructura
 
-**WARNING**: If you're using the second level Hibernate cache and disabling the Spring cache, you have to disable the second level Hibernate cache as well since they are using
-the same CacheManager.
+* **Docker Compose:** Para orquestación de bases de datos y servicios auxiliares.
 
-Run the following commands in two separate terminals to create a blissful development experience where your browser
-auto-refreshes when files change on your hard drive.
+---
 
-```
-./mvnw
-./npmw start
-```
+## 🖥️ Instrucciones de Instalación y Ejecución
 
-Npm is also used to manage CSS and JavaScript dependencies used in this application. You can upgrade dependencies by
-specifying a newer version in [package.json](package.json). You can also run `./npmw update` and `./npmw install` to manage dependencies.
-Add the `help` flag on any command to see how you can use it. For example, `./npmw help update`.
+### 1. Requisitos Previos
 
-The `./npmw run` command will list all the scripts available to run for this project.
+* Java 21 JDK instalado.
+* Docker corriendo.
+* Android Studio (para ejecutar el cliente móvil).
+* Acceso a la red de la Cátedra para Kafka/Redis remotos.
 
-### PWA Support
+### 2. Configuración de Base de Datos e Infraestructura
 
-JHipster ships with PWA (Progressive Web App) support, and it's turned off by default. One of the main components of a PWA is a service worker.
+Desde la carpeta raíz del proyecto, levanta los contenedores necesarios:
 
-The service worker initialization code is disabled by default. To enable it, uncomment the following code in `src/main/webapp/app/app.config.ts`:
-
-```typescript
-ServiceWorkerModule.register('ngsw-worker.js', { enabled: false }),
+```bash
+docker compose up -d
 ```
 
-### Managing dependencies
+Esto iniciará MySQL y el Redis local para el manejo de sesiones de usuario.
 
-For example, to add [Leaflet][] library as a runtime dependency of your application, you would run following command:
+### 3. Ejecución del Proxy Service
 
-```
-./npmw install --save --save-exact leaflet
-```
+El proxy es necesario para la sincronización de eventos.
 
-To benefit from TypeScript type definitions from [DefinitelyTyped][] repository in development, you would run following command:
-
-```
-./npmw install --save-dev --save-exact @types/leaflet
-```
-
-Then you would import the JS and CSS files specified in library's installation instructions so that [Webpack][] knows about them:
-Edit [src/main/webapp/app/app.config.ts](src/main/webapp/app/app.config.ts) file:
+```bash
+cd proxy
+# Asegúrate de configurar la IP de la cátedra en src/main/resources/application.yaml
+./mvnw spring-boot:run
 
 ```
-import 'leaflet/dist/leaflet.js';
-```
 
-Edit [src/main/webapp/content/scss/vendor.scss](src/main/webapp/content/scss/vendor.scss) file:
+> **Nota:** El proxy escuchará en el puerto `8081` por defecto.
 
-```
-@import 'leaflet/dist/leaflet.css';
-```
+### 4. Ejecución del Backend
 
-Note: There are still a few other things remaining to do for Leaflet that we won't detail here.
-
-For further instructions on how to develop with JHipster, have a look at [Using JHipster in development][].
-
-### Using Angular CLI
-
-You can also use [Angular CLI][] to generate some custom client code.
-
-For example, the following command:
+```bash
+cd backend
+./mvnw spring-boot:run
 
 ```
-ng generate component my-component
-```
 
-will generate few files:
+> **Nota:** El backend escuchará en el puerto `8080`.
 
-```
-create src/main/webapp/app/my-component/my-component.component.html
-create src/main/webapp/app/my-component/my-component.component.ts
-update src/main/webapp/app/app.config.ts
-```
+### 5. Ejecución del Cliente Móvil
 
-## Building for production
+Abrir la carpeta `composeApp` en Android Studio.
 
-### Packaging as jar
+* Sincronizar Gradle.
+* Ejecutar la configuración `composeApp` (Android).
 
-To build the final jar and optimize the backend application for production, run:
+---
 
-```
-./mvnw -Pprod clean verify
-```
+## 🔄 Flujos Principales
 
-This will concatenate and minify the client CSS and JavaScript files. It will also modify `index.html` so it references these new files.
-To ensure everything worked, run:
+### Sincronización de Eventos (Kafka)
 
-```
-java -jar target/*.jar
-```
+1. La Cátedra publica un cambio en el tópico `eventos-actualizacion`.
+2. El **Proxy** (Consumer Group: `AugustoGiuffrida`) recibe el mensaje.
+3. El Proxy envía un POST interno al Backend (`/api/eventos/notificacion-cambio`).
+4. El **Backend** consulta la API REST de la Cátedra, obtiene la lista actualizada y sincroniza su base de datos MySQL local (Creación/Actualización).
 
-Then navigate to [http://localhost:8080](http://localhost:8080) in your browser.
+### Proceso de Compra
 
-Refer to [Using JHipster in production][] for more details.
+1. **Selección:** El usuario elige un evento en la App. El Backend solicita al Proxy (quien consulta al Redis de Cátedra) el estado actual de los asientos.
+2. **Bloqueo:** Al confirmar selección, el Backend envía una solicitud de bloqueo a la Cátedra.
+3. **Datos:** El usuario carga los nombres de los asistentes.
+4. **Venta:** Se confirma la transacción. El Backend registra la venta localmente y notifica a la Cátedra para finalizar la persistencia.
 
-### Packaging as war
+---
 
-To package your application as a war in order to deploy it to an application server, run:
+## 🌐 Endpoints Principales (Backend)
 
-```
-./mvnw -Pprod,war clean verify
-```
+Estos son los endpoints expuestos por el Backend para el consumo del Cliente Móvil.
 
-### JHipster Control Center
+### 🔐 Autenticación
 
-JHipster Control Center can help you manage and control your application(s). You can start a local control center server (accessible on http://localhost:7419) with:
+| Método | Endpoint | Descripción |
+| --- | --- | --- |
+| POST | `/api/authenticate` | Login de usuario. Retorna JWT. |
+| GET | `/api/account` | Obtener datos del usuario logueado. |
 
-```
-docker compose -f src/main/docker/jhipster-control-center.yml up
-```
+### 📅 Eventos
 
-## Testing
+| Método | Endpoint | Descripción                                 |
+| --- | --- |---------------------------------------------|
+| GET | `/api/eventos` | Listar eventos disponibles (sincronizados). |
+| GET | `/api/eventos/{id}` | Detalle completo de un evento.              |
+| POST | `/api/eventos/sincronizar` | Forzar sincronización manual con Cátedra.   |
+| POST | `/api/eventos/notificacion-cambio` | Sincronización automatica mediante kafka.   |
 
-### Spring Boot tests
+### 🎟️ Gestión de Ventas y Asientos
 
-To launch your application's tests, run:
+| Método | Endpoint | Descripción |
+| --- | --- | --- |
+| GET | `/api/asientos-ocupados/{eventoId}` | Consulta (vía Proxy) el mapa de asientos en tiempo real. |
+| POST | `/api/gateway/bloquear-asientos` | Solicita bloqueo temporal de butacas en servidor externo. |
+| POST | `/api/gateway/realizar-venta` | Confirma la compra, guarda localmente y notifica a la Cátedra. |
+| POST | `/api/ventas/reintentar/{id}` | Mecanismo de **Resiliencia**: Reintenta enviar ventas que quedaron en estado `PENDIENTE` por fallos de red. |
+| POST | `/api/ventas/bloquear` | Bloqueo: Recibe SolicitudBloqueoDTO. Solicita bloqueo a Cátedra y actualiza sesión local. |
+| POST | `/api/ventas/comprar` | Solicita bloqueo temporal de butacas en servidor externo. |
 
-```
-./mvnw verify
-```
 
-### Client tests
+### 🛒 Gestión de Sesión (Redis)
 
-Unit tests are run by [Jest][]. They're located near components and can be run with:
-
-```
-./npmw test
-```
-
-## Others
-
-### Code quality using Sonar
-
-Sonar is used to analyse code quality. You can start a local Sonar server (accessible on http://localhost:9001) with:
-
-```
-docker compose -f src/main/docker/sonar.yml up -d
-```
-
-Note: we have turned off forced authentication redirect for UI in [src/main/docker/sonar.yml](src/main/docker/sonar.yml) for out of the box experience while trying out SonarQube, for real use cases turn it back on.
-
-You can run a Sonar analysis with using the [sonar-scanner](https://docs.sonarqube.org/display/SCAN/Analyzing+with+SonarQube+Scanner) or by using the maven plugin.
-
-Then, run a Sonar analysis:
-
-```
-./mvnw -Pprod clean verify sonar:sonar -Dsonar.login=admin -Dsonar.password=admin
-```
-
-If you need to re-run the Sonar phase, please be sure to specify at least the `initialize` phase since Sonar properties are loaded from the sonar-project.properties file.
-
-```
-./mvnw initialize sonar:sonar -Dsonar.login=admin -Dsonar.password=admin
-```
-
-Additionally, Instead of passing `sonar.password` and `sonar.login` as CLI arguments, these parameters can be configured from [sonar-project.properties](sonar-project.properties) as shown below:
-
-```
-sonar.login=admin
-sonar.password=admin
-```
-
-For more information, refer to the [Code quality page][].
-
-### Docker Compose support
-
-JHipster generates a number of Docker Compose configuration files in the [src/main/docker/](src/main/docker/) folder to launch required third party services.
-
-For example, to start required services in Docker containers, run:
-
-```
-docker compose -f src/main/docker/services.yml up -d
-```
-
-To stop and remove the containers, run:
-
-```
-docker compose -f src/main/docker/services.yml down
-```
-
-[Spring Docker Compose Integration](https://docs.spring.io/spring-boot/reference/features/dev-services.html) is enabled by default. It's possible to disable it in application.yml:
-
-```yaml
-spring:
-  ...
-  docker:
-    compose:
-      enabled: false
-```
-
-You can also fully dockerize your application and all the services that it depends on.
-To achieve this, first build a Docker image of your app by running:
-
-```sh
-npm run java:docker
-```
-
-Or build a arm64 Docker image when using an arm64 processor os like MacOS with M1 processor family running:
-
-```sh
-npm run java:docker:arm64
-```
-
-Then run:
-
-```sh
-docker compose -f src/main/docker/app.yml up -d
-```
-
-For more information refer to [Using Docker and Docker-Compose][], this page also contains information on the Docker Compose sub-generator (`jhipster docker-compose`), which is able to generate Docker configurations for one or several JHipster applications.
-
-## Continuous Integration (optional)
-
-To configure CI for your project, run the ci-cd sub-generator (`jhipster ci-cd`), this will let you generate configuration files for a number of Continuous Integration systems. Consult the [Setting up Continuous Integration][] page for more information.
-
-[JHipster Homepage and latest documentation]: https://www.jhipster.tech
-[JHipster 8.11.0 archive]: https://www.jhipster.tech/documentation-archive/v8.11.0
-[Using JHipster in development]: https://www.jhipster.tech/documentation-archive/v8.11.0/development/
-[Using Docker and Docker-Compose]: https://www.jhipster.tech/documentation-archive/v8.11.0/docker-compose
-[Using JHipster in production]: https://www.jhipster.tech/documentation-archive/v8.11.0/production/
-[Running tests page]: https://www.jhipster.tech/documentation-archive/v8.11.0/running-tests/
-[Code quality page]: https://www.jhipster.tech/documentation-archive/v8.11.0/code-quality/
-[Setting up Continuous Integration]: https://www.jhipster.tech/documentation-archive/v8.11.0/setting-up-ci/
-[Node.js]: https://nodejs.org/
-[NPM]: https://www.npmjs.com/
-[Webpack]: https://webpack.github.io/
-[BrowserSync]: https://www.browsersync.io/
-[Jest]: https://jestjs.io
-[Leaflet]: https://leafletjs.com/
-[DefinitelyTyped]: https://definitelytyped.org/
-[Angular CLI]: https://angular.dev/tools/cli
+| Método | Endpoint | Recurso Java | Descripción |
+| --- | --- | --- | --- |
+| GET | `/api/sesion` | `SesionResource` | Recupera el estado actual (evento seleccionado, butacas). |
+| POST | `/api/sesion` | `SesionResource` | Actualiza la sesión (ej: al seleccionar/deseleccionar butacas). |
+| DELETE | `/api/sesion` | `SesionResource` | Limpia la sesión actual (logout o fin de compra). |

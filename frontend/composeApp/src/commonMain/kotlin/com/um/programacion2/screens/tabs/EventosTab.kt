@@ -131,7 +131,7 @@ fun EventoCard(evento: EventoDTO, onClick: () -> Unit) {
                     contentDescription = null,
                     modifier = Modifier
                         .fillMaxWidth()
-                        .height(150.dp), // Altura fija para la imagen
+                        .height(150.dp),
                     contentScale = androidx.compose.ui.layout.ContentScale.Crop
                 )
             }
@@ -176,7 +176,7 @@ fun EventoCard(evento: EventoDTO, onClick: () -> Unit) {
                     tint = MaterialTheme.colorScheme.secondary
                 )
                 Spacer(modifier = Modifier.width(4.dp))
-                // Formateo básico de la fecha string
+
                 Text(
                     text = evento.fecha?.take(10) ?: "10/12/2025",
                     style = MaterialTheme.typography.bodySmall,
