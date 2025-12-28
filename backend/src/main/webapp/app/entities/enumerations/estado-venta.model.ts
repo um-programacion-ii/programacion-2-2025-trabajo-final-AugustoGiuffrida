@@ -1,0 +1,7 @@
+export enum EstadoVenta {
+  PENDIENTE = 'PENDIENTE',
+
+  CONFIRMADA = 'CONFIRMADA',
+
+  RECHAZADA = 'RECHAZADA',
+}

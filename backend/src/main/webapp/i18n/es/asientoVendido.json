@@ -1,0 +1,27 @@
+{
+  "backendApp": {
+    "asientoVendido": {
+      "home": {
+        "title": "Asiento Vendidos",
+        "refreshListLabel": "Refrescar lista",
+        "createLabel": "Crear nuevo Asiento Vendido",
+        "createOrEditLabel": "Crear o editar Asiento Vendido",
+        "notFound": "Ningún Asiento Vendidos encontrado"
+      },
+      "created": "Un nuevo Asiento Vendido ha sido creado con el identificador {{ param }}",
+      "updated": "Un Asiento Vendido ha sido actualizado con el identificador {{ param }}",
+      "deleted": "Un Asiento Vendido ha sido eliminado con el identificador {{ param }}",
+      "delete": {
+        "question": "¿Seguro que quiere eliminar Asiento Vendido {{ id }}?"
+      },
+      "detail": {
+        "title": "Asiento Vendido"
+      },
+      "id": "ID",
+      "fila": "Fila",
+      "columna": "Columna",
+      "persona": "Persona",
+      "venta": "Venta"
+    }
+  }
+}

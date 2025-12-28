@@ -1,0 +1,50 @@
+server:
+  port: 8081
+
+spring:
+  application:
+    name: proxy
+
+  # Configuración para REDIS
+  data:
+    redis:
+      host: 192.168.194.250
+      port: 6379
+      # password: "example_password"
+
+  # Configuración para KAFKA
+  kafka:
+    bootstrap-servers: 192.168.194.250:9092
+    listener:
+      ack-mode: MANUAL_IMMEDIATE
+    consumer:
+      group-id: "AugustoGiuffrida"
+      auto-offset-reset: earliest
+      #auto-commit-interval: 1000
+      enable-auto-commit: false
+      max-poll-records: 50
+      key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      value-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      properties:
+        # Valores estándar para red estable
+        session.timeout.ms: 10000
+        heartbeat.interval.ms: 3000
+        request.timeout.ms: 30000
+
+        # Importante: Como procesamos 50 mensajes y cada uno hace una llamada HTTP,
+        # damos 5 minutos al ciclo completo antes de que Kafka crea que morimos.
+        max.poll.interval.ms: 300000
+
+
+application:
+  backend-url: "http://localhost:8080"
+  catedra-api-url: "http://192.168.194.250:8080"
+  bloquear-asientos-url: "/api/endpoints/v1/bloquear-asientos"
+  realizar-venta-url: "/api/endpoints/v1/realizar-venta"
+
+logging:
+  level:
+    root: INFO
+    com.um.programacion2: DEBUG
+    org.springframework.kafka: DEBUG
+    org.apache.kafka.clients.consumer: WARN

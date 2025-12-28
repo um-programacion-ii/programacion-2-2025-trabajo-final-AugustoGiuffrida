@@ -1,0 +1,148 @@
+<div>
+  <h2 id="page-heading" data-cy="VentaHeading">
+    <span jhiTranslate="backendApp.venta.home.title">Ventas</span>
+
+    <div class="d-flex justify-content-end">
+      <button class="btn btn-info me-2" (click)="load()" [disabled]="isLoading">
+        <fa-icon icon="sync" [animation]="isLoading ? 'spin' : undefined"></fa-icon>
+        <span jhiTranslate="backendApp.venta.home.refreshListLabel">Refrescar lista</span>
+      </button>
+
+      <button
+        id="jh-create-entity"
+        data-cy="entityCreateButton"
+        class="btn btn-primary jh-create-entity create-venta"
+        [routerLink]="['/venta/new']"
+      >
+        <fa-icon icon="plus"></fa-icon>
+        <span jhiTranslate="backendApp.venta.home.createLabel">Crear nuevo Venta</span>
+      </button>
+    </div>
+  </h2>
+
+  <jhi-alert-error />
+
+  <jhi-alert />
+
+  @if (ventas().length === 0) {
+    <div class="alert alert-warning" id="no-result">
+      <span jhiTranslate="backendApp.venta.home.notFound">Ningún Ventas encontrado</span>
+    </div>
+  } @else {
+    <div class="table-responsive table-entities" id="entities">
+      <table class="table table-striped" aria-describedby="page-heading">
+        <thead>
+          <tr jhiSort [(sortState)]="sortState" (sortChange)="navigateToWithComponentValues($event)">
+            <th scope="col" jhiSortBy="id">
+              <div class="d-flex">
+                <span jhiTranslate="global.field.id">ID</span>
+
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="ventaIdCatedra">
+              <div class="d-flex">
+                <span jhiTranslate="backendApp.venta.ventaIdCatedra">Venta Id Catedra</span>
+
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="fechaVenta">
+              <div class="d-flex">
+                <span jhiTranslate="backendApp.venta.fechaVenta">Fecha Venta</span>
+
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="precioVenta">
+              <div class="d-flex">
+                <span jhiTranslate="backendApp.venta.precioVenta">Precio Venta</span>
+
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="resultado">
+              <div class="d-flex">
+                <span jhiTranslate="backendApp.venta.resultado">Resultado</span>
+
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="descripcion">
+              <div class="d-flex">
+                <span jhiTranslate="backendApp.venta.descripcion">Descripcion</span>
+
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="estadoVenta">
+              <div class="d-flex">
+                <span jhiTranslate="backendApp.venta.estadoVenta">Estado Venta</span>
+
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="evento.titulo">
+              <div class="d-flex">
+                <span jhiTranslate="backendApp.venta.evento">Evento</span>
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col" jhiSortBy="user.login">
+              <div class="d-flex">
+                <span jhiTranslate="backendApp.venta.user">User</span>
+                <fa-icon class="p-1" icon="sort"></fa-icon>
+              </div>
+            </th>
+            <th scope="col"></th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (venta of ventas(); track trackId(venta)) {
+            <tr data-cy="entityTable">
+              <td>
+                <a [routerLink]="['/venta', venta.id, 'view']">{{ venta.id }}</a>
+              </td>
+              <td>{{ venta.ventaIdCatedra }}</td>
+              <td>{{ venta.fechaVenta | formatMediumDatetime }}</td>
+              <td>{{ venta.precioVenta }}</td>
+              <td>{{ venta.resultado }}</td>
+              <td>{{ venta.descripcion }}</td>
+              <td [jhiTranslate]="'backendApp.EstadoVenta.' + (venta.estadoVenta ?? 'null')">
+                {{ { null: '', PENDIENTE: 'PENDIENTE', CONFIRMADA: 'CONFIRMADA', RECHAZADA: 'RECHAZADA' }[venta.estadoVenta ?? 'null'] }}
+              </td>
+              <td>
+                @if (venta.evento) {
+                  <div>
+                    <a [routerLink]="['/evento', venta.evento.id, 'view']">{{ venta.evento.titulo }}</a>
+                  </div>
+                }
+              </td>
+              <td>
+                {{ venta.user?.login }}
+              </td>
+              <td class="text-end">
+                <div class="btn-group">
+                  <a [routerLink]="['/venta', venta.id, 'view']" class="btn btn-info btn-sm" data-cy="entityDetailsButton">
+                    <fa-icon icon="eye"></fa-icon>
+                    <span class="d-none d-md-inline" jhiTranslate="entity.action.view">Vista</span>
+                  </a>
+
+                  <a [routerLink]="['/venta', venta.id, 'edit']" class="btn btn-primary btn-sm" data-cy="entityEditButton">
+                    <fa-icon icon="pencil-alt"></fa-icon>
+                    <span class="d-none d-md-inline" jhiTranslate="entity.action.edit">Editar</span>
+                  </a>
+
+                  <button type="submit" (click)="delete(venta)" class="btn btn-danger btn-sm" data-cy="entityDeleteButton">
+                    <fa-icon icon="times"></fa-icon>
+                    <span class="d-none d-md-inline" jhiTranslate="entity.action.delete">Eliminar</span>
+                  </button>
+                </div>
+              </td>
+            </tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

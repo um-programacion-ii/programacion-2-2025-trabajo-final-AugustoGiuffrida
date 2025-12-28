@@ -1,0 +1,37 @@
+{
+  "annotations": {
+    "changelogDate": "20251110015103"
+  },
+  "applications": "*",
+  "documentation": "Entidad auxiliar para guardar cada asiento de una Venta.",
+  "dto": "mapstruct",
+  "fields": [
+    {
+      "fieldName": "fila",
+      "fieldType": "Integer",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "columna",
+      "fieldType": "Integer",
+      "fieldValidateRules": ["required"]
+    },
+    {
+      "fieldName": "persona",
+      "fieldType": "String",
+      "fieldValidateRules": ["required"]
+    }
+  ],
+  "name": "AsientoVendido",
+  "relationships": [
+    {
+      "otherEntityName": "venta",
+      "otherEntityRelationshipName": "asientos",
+      "relationshipName": "venta",
+      "relationshipSide": "right",
+      "relationshipType": "many-to-one"
+    }
+  ],
+  "searchEngine": "no",
+  "service": "serviceImpl"
+}
